@@ -186,9 +186,7 @@ def ai_move(board: Board, ai_player: str, human_player: str) -> Move:
     --------------------------------------------------------------------
     """
     # ----------  INSERT YOUR CODE BELOW  ----------
-    # Example placeholder (random) – replace with your own algorithm:
-    possible = get_available_moves(board)
-    return random.choice(possible)
+
     # ----------  END OF YOUR CODE  -----------------
 
 
