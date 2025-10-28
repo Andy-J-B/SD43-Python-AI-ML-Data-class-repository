@@ -140,17 +140,39 @@ def get_available_moves(board: Board) -> List[Move]:
     # -------------------------------------------------------------
 
 
+# ----------------------------------------------------------------
+# 5. pretty_print()
+# ----------------------------------------------------------------
 def pretty_print(board: Board) -> None:
-    """Print the board in a human‑readable format."""
+    """
+    Display the current board in a nice, human‑readable format.
 
-    def sym(cell):
-        return cell if cell is not None else " "
+    Expected output (example for a partially‑filled board):
 
-    rows = []
-    for r in range(3):
-        rows.append(" | ".join(sym(board[r][c]) for c in range(3)))
-    separator = "\n-----------\n"
-    print("\n" + separator.join(rows) + "\n")
+         X |   | O
+        -----------
+           | X |
+        -----------
+         O |   | X
+
+    What you need to do:
+    1. Create a helper that turns a cell value into a printable symbol.
+       * If the cell is None → return a single space `" "`.
+       * Otherwise return the stored mark (`"X"` or `"O"`).
+    2. Build a list called `rows` where each entry is a string like
+       `"X |   | O"` for one board row.
+       * Loop over the three rows (index `r` from 0 to 2).
+       * Within the row, join the three symbols with `" | "` as separator.
+    3. Define a separator string that draws a horizontal line
+       (`"\n-----------\n"`).
+    4. Print a blank line, then the rows joined by the separator,
+       then another blank line – this gives the visual grid.
+    """
+    # -------------------------------------------------------------
+    # IMPLEMENTATION STARTS HERE
+    # -------------------------------------------------------------
+    pass  # Replace this line with the code described above
+    # -------------------------------------------------------------
 
 
 # ----------------------------------------------------------------
@@ -193,56 +215,40 @@ def ai_move(board: Board, ai_player: str, human_player: str) -> Move:
 # ----------------------------------------------------------------
 # MAIN GAME LOOP (already complete)
 # ----------------------------------------------------------------
+# ----------------------------------------------------------------
+# 6. play_game()   – main loop (already complete, but shown as a skeleton)
+# ----------------------------------------------------------------
 def play_game() -> None:
     """
-    Console‑based two‑player game: Human (X) vs AI (O).
-    The AI uses `ai_move()` – the student implements that.
+    Run the interactive console game: Human (X) vs AI (O).
+
+    The flow of the loop is:
+    1. Show the board.
+    2. If it is the human's turn → read a number 1‑9, convert it to
+       row/col, validate, and call `make_move`.
+    3. If it is the AI's turn → call `ai_move` to obtain a (row, col)
+       and then `make_move` the AI's piece.
+    4. After each move, check for a winner or a draw.
+    5. If the game ends, print the final board and a message.
+    6. Otherwise, switch the current player and repeat.
+
+    What you need to implement:
+    * All the logic that is described above is already written in the
+      original version – you only need to **uncomment** it (or copy it) into
+      this function.
+    * Make sure the function **does not return anything**; it should
+      simply run the loop until a break occurs.
+    * Keep the user prompts clear and validate input as shown in the
+      reference implementation.
+
+    Below is a blank template; fill in the body exactly as the original
+    code (or copy‑paste it) so the program runs.
     """
-    board = initialize_board()
-    human_player = "X"
-    ai_player = "O"
-    current = human_player
-
-    while True:
-        pretty_print(board)
-
-        if current == human_player:
-            # -------- HUMAN TURN ----------
-            while True:
-                try:
-                    pos = int(input("Your move (1‑9): "))
-                except ValueError:
-                    print("Please enter a number between 1 and 9.")
-                    continue
-
-                if pos < 1 or pos > 9:
-                    print("Number out of range.")
-                    continue
-
-                row, col = divmod(pos - 1, 3)
-                if make_move(board, row, col, human_player):
-                    break
-                else:
-                    print("Square already taken – try again.")
-        else:
-            # -------- AI TURN ----------
-            row, col = ai_move(board, ai_player, human_player)
-            make_move(board, row, col, ai_player)
-            print(f"AI places {ai_player} at position {row * 3 + col + 1}")
-
-        # -------- CHECK END OF GAME ----------
-        winner = check_winner(board)
-        if winner:
-            pretty_print(board)
-            print(f"Game over – {winner} wins!")
-            break
-        if is_draw(board):
-            pretty_print(board)
-            print("Game over – it's a draw!")
-            break
-
-        # Switch player
-        current = ai_player if current == human_player else human_player
+    # -------------------------------------------------------------
+    # IMPLEMENTATION STARTS HERE
+    # -------------------------------------------------------------
+    pass  # Replace this line with the complete game loop code
+    # -------------------------------------------------------------
 
 
 if __name__ == "__main__":
