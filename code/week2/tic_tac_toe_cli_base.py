@@ -247,7 +247,21 @@ def play_game() -> None:
     # -------------------------------------------------------------
     # IMPLEMENTATION STARTS HERE
     # -------------------------------------------------------------
-    pass  # Replace this line with the complete game loop code
+
+    # variables
+
+    while True:
+        pretty_print(board)
+
+        if current == human_player:
+            while True:
+                try:
+                    position = int(input("Please make a move (1-9): "))
+                except ValueError:
+                    print("Enter a valid number between 1-9")
+
+                values = 1
+
     # -------------------------------------------------------------
 
 

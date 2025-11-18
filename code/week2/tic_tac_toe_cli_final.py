@@ -5,6 +5,7 @@
 # --------------------------------------------------------------
 
 from typing import List, Optional, Tuple
+import random
 import sys
 
 Board = List[List[Optional[str]]]
@@ -56,6 +57,13 @@ def pretty_print(board: Board) -> None:
         rows.append(" | ".join(sym(board[r][c]) for c in range(3)))
     separator = "\n-----------\n"
     print("\n" + separator.join(rows) + "\n")
+
+
+def ai_move(board: Board, ai_player: str, human_player: str) -> Move:
+    available_moves = get_available_moves(board)
+    random_choice = random.choice(available_moves)
+    return random_choice
+    # ---------------------  INSERT YOUR CODE  ---------------------
 
 
 # Up to here
