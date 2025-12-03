@@ -140,100 +140,53 @@ def pretty_print(board: Board) -> None:
 
 
 # ----------------------------------------------------------------
-#  MINIMAX WITH ALPHA‑BETA PRUNING
+#  MINIMAX AI
 # ----------------------------------------------------------------
-
-
-def minimax_alpha_beta(
-    board: Board,  # current game board (list of lists)
-    depth: int,  # how many moves deep we are in the tree
-    alpha: float,  # best value that the maximiser can guarantee
-    beta: float,  # best value that the minimiser can guarantee
-    is_maximizing: bool,  # True → AI's turn, False → human's turn
-    ai_player: str,  # symbol used by the AI (e.g. "X")
-    human_player: str,  # symbol used by the human (e.g. "O")
+def minimax(
+    board: Board, depth: int, is_maximizing: bool, ai_player: str, human_player: str
 ) -> int:
-    """
-    MINIMAX WITH ALPHA‑BETA PRUNING
+    winner = check_winner(board)
+    if winner == ai_player:
+        return 10 - depth  # quicker win is better
+    if winner == human_player:
+        return depth - 10  # slower loss is better
+    if is_draw(board):
+        return 0
 
-    Returns an integer score (+10 for AI win, –10 for Human win, 0 for draw)
-    while cutting off branches that cannot influence the final decision.
-    """
-    # ------------------------------------------------------------
-    # 1️⃣  Terminal state check (win / loss / draw)
-    # ------------------------------------------------------------
-    winner = check_winner(board)  # does anyone already have three in a row?
-    if winner == ai_player:  # AI has already won
-        return 10 - depth  # sooner wins are better
-    if winner == human_player:  # Human has already won
-        return depth - 10  # later losses are slightly less bad
-    if is_draw(board):  # board full with no winner
-        return 0  # neutral outcome
-
-    # ------------------------------------------------------------
-    # 2️⃣  Recursive exploration with cut‑offs
-    # ------------------------------------------------------------
-    if is_maximizing:  # ----- AI's move (we want the highest value)
-        value = -float("inf")  # start lower than any possible score
-        for r, c in get_available_moves(board):  # iterate over every empty cell
-            board[r][c] = ai_player  # make a tentative AI move
-            # recurse: now it will be the human's turn (is_maximizing=False)
-            score = minimax_alpha_beta(
-                board, depth + 1, alpha, beta, False, ai_player, human_player
-            )
-            board[r][c] = None  # undo the tentative move (backtrack)
-
-            value = max(value, score)  # keep the best score we have seen
-            alpha = max(alpha, value)  # update α (best guarantee for maximiser)
-
-            if alpha >= beta:  # α‑β cut‑off → this branch cannot improve outcome
-                break  # stop exploring further children
-        return int(value)  # cast to int for consistency with original API
-
-    else:  # ----- Human's move (we want the lowest value)
-        value = float("inf")  # start higher than any possible score
+    if is_maximizing:
+        best = -float("inf")
         for r, c in get_available_moves(board):
-            board[r][c] = human_player  # tentative human move
-            score = minimax_alpha_beta(
-                board, depth + 1, alpha, beta, True, ai_player, human_player
-            )
-            board[r][c] = None  # undo move
+            board[r][c] = ai_player
+            score = minimax(board, depth + 1, False, ai_player, human_player)
+            board[r][c] = None
+            best = max(best, score)
+        return best
+    else:
+        best = float("inf")
+        for r, c in get_available_moves(board):
+            board[r][c] = human_player
+            score = minimax(board, depth + 1, True, ai_player, human_player)
+            board[r][c] = None
+            best = min(best, score)
+        return best
 
-            value = min(
-                value, score
-            )  # keep the worst score for the AI (best for human)
-            beta = min(beta, value)  # update β (best guarantee for minimiser)
 
-            if beta <= alpha:  # β‑α cut‑off → no need to explore further
-                break
-        return int(value)  # final minimised value for this branch
-
-
-# ----------------------------------------------------------------
-# ai_move -----------------------------------------------------------
-# ----------------------------------------------------------------
 def ai_move(board: Board, ai_player: str, human_player: str) -> Move:
     """
-    Choose the optimal move for the AI using the alpha‑beta minimax.
+    Pick the best move for the AI using minimax.
     """
-    best_score = -float("inf")  # initialise with the worst possible score
-    best_move: Move = (-1, -1)  # placeholder for the best coordinates
+    best_score = -float("inf")
+    best_move: Move = (-1, -1)
 
-    # ------------------------------------------------------------
-    # Try every legal move, evaluate it with alpha‑beta, keep the best.
-    # ------------------------------------------------------------
     for r, c in get_available_moves(board):
-        board[r][c] = ai_player  # simulate AI playing here
-        score = minimax_alpha_beta(
-            board, 0, -float("inf"), float("inf"), False, ai_player, human_player
-        )
-        board[r][c] = None  # undo the simulation
-
-        if score > best_score:  # found a better move?
+        board[r][c] = ai_player
+        score = minimax(board, 0, False, ai_player, human_player)
+        board[r][c] = None
+        if score > best_score:
             best_score = score
-            best_move = (r, c)  # remember its coordinates
+            best_move = (r, c)
 
-    return best_move  # return the optimal cell for the AI
+    return best_move
 
 
 # ----------------------------------------------------------------
