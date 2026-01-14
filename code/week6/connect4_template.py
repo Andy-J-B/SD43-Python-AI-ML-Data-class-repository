@@ -44,18 +44,21 @@ class Board:
     def legal_moves(self):
         """Return a list of column indices (0 … COLS‑1) where a piece can be dropped."""
         # TODO: a column is legal if its topmost cell (row 0) is EMPTY.
-        raise NotImplementedError
+        return [c for c in range(COLS) if self.grid[0, c] == EMPTY]
+
 
     # ------------------- 2️⃣ Apply a move ----------------------------
     def make_move(self, col, player):
-        """
-        Drop a piece for `player` into column `col`.
-        Returns the (row, col) where the piece lands.
-        Raises ValueError if the column is full.
-        """
-        # TODO: find the lowest empty cell in column `col`, fill it,
-        #       store it in `self.last_move`, and return its (row,col).
-        raise NotImplementedError
+        if self.grid[0,COLS] != 0:
+            raise ValueError(f"{col} is full")
+        for r in reversed(range(ROWS)):
+            if self.grid[r,col] == 0:
+                self.grid[r,col] = player
+                self.last_move = (r,col)
+                return self.last_move
+            
+        raise RuntimeError("make move failed")
+        
 
     # ------------------- 3️⃣ Undo a move -----------------------------
     def undo_move(self, col):
@@ -64,8 +67,12 @@ class Board:
         Used by minimax/α‑β search to backtrack.
         """
         # TODO: pop the highest non‑empty cell in column `col`.
-        raise NotImplementedError
-
+        for r in range(ROWS):
+            if self.grid[r, col] != EMPTY:
+                self.grid[r, col] = EMPTY
+                self.last_move = None
+                return 
+        raise ValueError
     # ------------------- 4️⃣ Terminal test --------------------------
     def is_full(self):
         """Return True if the board has no empty cells."""
@@ -78,7 +85,21 @@ class Board:
         """
         # TODO: scan rows, columns, and both diagonals for a run
         #       of WIN_LENGTH pieces belonging to the same player.
-        raise NotImplementedError
+        def run_length(line):
+            max_length = 0
+            current_length = 0
+            current_player = 0
+            for p in line:
+                if p == current_player and p != 0:
+                    current_length = current_length + 1
+                else:
+                    current_player = p
+                    if p != 0:
+                      current_length = 1
+                    else:
+                        current_length = 0
+                max_length = max(current_length, max_length)
+            return max_length
 
     # ------------------- 5️⃣ Utility / evaluation ------------------
     def evaluate(self, player):
