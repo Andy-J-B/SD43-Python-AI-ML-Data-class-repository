@@ -46,19 +46,17 @@ class Board:
         # TODO: a column is legal if its topmost cell (row 0) is EMPTY.
         return [c for c in range(COLS) if self.grid[0, c] == EMPTY]
 
-
     # ------------------- 2️⃣ Apply a move ----------------------------
     def make_move(self, col, player):
-        if self.grid[0,COLS] != 0:
+        if self.grid[0, COLS] != 0:
             raise ValueError(f"{col} is full")
         for r in reversed(range(ROWS)):
-            if self.grid[r,col] == 0:
-                self.grid[r,col] = player
-                self.last_move = (r,col)
+            if self.grid[r, col] == 0:
+                self.grid[r, col] = player
+                self.last_move = (r, col)
                 return self.last_move
-            
+
         raise RuntimeError("make move failed")
-        
 
     # ------------------- 3️⃣ Undo a move -----------------------------
     def undo_move(self, col):
@@ -71,8 +69,9 @@ class Board:
             if self.grid[r, col] != EMPTY:
                 self.grid[r, col] = EMPTY
                 self.last_move = None
-                return 
+                return
         raise ValueError
+
     # ------------------- 4️⃣ Terminal test --------------------------
     def is_full(self):
         """Return True if the board has no empty cells."""
@@ -83,6 +82,7 @@ class Board:
         Return PLAYER1, PLAYER2 if someone has a CONNECT‑FOUR,
         or EMPTY if no winner yet.
         """
+
         # TODO: scan rows, columns, and both diagonals for a run
         #       of WIN_LENGTH pieces belonging to the same player.
         def run_length(line):
@@ -95,7 +95,7 @@ class Board:
                 else:
                     current_player = p
                     if p != 0:
-                      current_length = 1
+                        current_length = 1
                     else:
                         current_length = 0
                 max_length = max(current_length, max_length)
@@ -224,77 +224,132 @@ class MCTSNode:
 # ----------------------------------------------------------------------
 class QLearningAgent:
     """
-    Tabular Q‑learning agent.
-    State is encoded as a string of 42 characters (0/1/2) – enough for an
-    introductory demo (no deep net). For a class project you can keep the
-    learning loop separate from the UI.
+    Tabular Q‑learning agent for Connect‑Four.
+
+    *State representation* – the board (a 6 × 7 NumPy array) is flattened
+    row‑major and each cell is turned into a character ``'0'`` (empty),
+    ``'1'`` (PLAYER1) or ``'2'`` (PLAYER2).  The resulting 42‑character
+    string is used as a dictionary key.
+
+    *Action space* – the 7 columns (indices 0 … 6).  An entry in the
+    Q‑table is therefore a length‑7 NumPy vector.
+
+    The class implements the full learning loop (self‑play) plus the
+    ordinary Q‑learning utilities needed by the UI.
     """
 
+    # ------------------------------------------------------------------
+    # 1️⃣  Construction
+    # ------------------------------------------------------------------
     def __init__(self, player, alpha=0.5, gamma=0.9, epsilon=0.2):
+        """
+        Parameters
+        ----------
+        player  : int   – which side this agent plays (PLAYER1 or PLAYER2)
+        alpha   : float – learning‑rate (0 < α ≤ 1)
+        gamma   : float – discount factor (0 ≤ γ ≤ 1)
+        epsilon : float – probability of taking a random (exploratory) move
+        """
         self.player = player
         self.alpha = alpha  # learning rate
         self.gamma = gamma  # discount factor
-        self.epsilon = epsilon  # exploration prob.
-        self.Q = {}  # dict: state_str -> np.ndarray of Q-values per action
+        self.epsilon = epsilon  # exploration probability
+        # Q‑table:  state string → np.ndarray of shape (COLS,)
+        self.Q = {}
 
+    # ------------------------------------------------------------------
+    # 2️⃣  Encode a board into a hashable string
+    # ------------------------------------------------------------------
     @staticmethod
     def encode(board):
         """
         Convert the Board's NumPy grid into a compact, hashable string.
         Each cell contains 0 (EMPTY), 1 (PLAYER1) or 2 (PLAYER2).
-        A simple way is to flatten the grid (row‑major order) and join the
-        integer values:
 
-            ''.join(str(int(v)) for v in board.grid.ravel())
+        Example (tiny 2×3 board):
+            [[0, 1, 0],
+             [2, 0, 1]]  →  "010201"
 
-        This string will be used as a dictionary key in ``self.Q``.
+        The result will be used as a key in ``self.Q``.
         """
+        # TODO: flatten the array (row‑major) and join the integer values.
+        #       Hint:  board.grid.ravel()  gives a 1‑D view.
         raise NotImplementedError
 
+    # ------------------------------------------------------------------
+    # 3️⃣  Get (or create) the Q‑vector for a state
+    # ------------------------------------------------------------------
     def get_Q(self, state):
         """
         Return the Q‑value vector for a given ``state``.
-        * ``state`` is the string produced by ``encode``.
-        * If the state has never been seen, create a new entry:
-          ``self.Q[state] = np.zeros(COLS)`` (one Q‑value for each column).
-        The method must then return the NumPy array stored in the dictionary.
+        If the state has never been seen, initialise an entry of zeros.
+
+        Parameters
+        ----------
+        state : str   – the 42‑character string returned by ``encode``.
+
+        Returns
+        -------
+        np.ndarray of shape (COLS,) – mutable array of Q‑values.
         """
+        # TODO: if ``state`` not yet a key → create ``np.zeros(COLS)``.
+        # TODO: return the stored array.
         raise NotImplementedError
 
+    # ------------------------------------------------------------------
+    # 4️⃣  ε‑greedy action selection
+    # ------------------------------------------------------------------
     def select_action(self, board):
         """
-        Choose an action (column) using an ε‑greedy policy.
-        * With probability ``self.epsilon`` choose a random legal move.
-        * Otherwise, look up the Q‑values for the current state and pick the
-          legal move with the highest Q‑value. If several moves share the
-          maximal value, break ties randomly.
-        * Return the selected column index (int).
+        Choose a column for the current board.
 
-        Hint: call ``self.encode(board)`` to obtain the state string,
-        then ``self.get_Q(state)`` to retrieve the vector.
+        * With probability ``self.epsilon`` pick a random legal column
+          (exploration).
+        * Otherwise pick the legal column with the highest Q‑value
+          (exploitation).  If several legal columns share the maximal
+          value, break ties randomly.
+
+        Returns
+        -------
+        int – the chosen column index (0 … COLS‑1).
         """
+        # TODO: 1️⃣ obtain the list of legal columns:  board.legal_moves()
+        # TODO: 2️⃣ encode the board & fetch its Q‑vector
+        # TODO: 3️⃣ with probability ε return a random legal move
+        # TODO: 4️⃣ otherwise select the legal move(s) with maximal Q,
+        #          break ties randomly, and return the chosen column.
         raise NotImplementedError
 
+    # ------------------------------------------------------------------
+    # 5️⃣  Q‑learning update rule
+    # ------------------------------------------------------------------
     def update(self, board, action, reward, next_board, done):
         """
         Apply the standard Q‑learning update:
 
-            Q(s,a) ← Q(s,a) + α [ reward + γ * max_a' Q(s',a') – Q(s,a) ]
+            Q(s,a) ← Q(s,a) + α [ reward + γ·max_a' Q(s',a') – Q(s,a) ]
 
-        * ``board`` is the state *before* taking ``action``.
-        * ``next_board`` is the resulting state after the move.
-        * ``reward`` is a scalar (e.g. +1 for a win, -1 for a loss, 0 otherwise).
-        * ``done`` indicates whether ``next_board`` is terminal.
-
-        Steps:
-            1. Encode ``board`` and ``next_board``.
-            2. Retrieve the Q‑vectors for both states via ``get_Q``.
-            3. Compute the target value:
-               - ``reward`` if ``done`` else
-               - ``reward + self.gamma * max(Q_next)``.
-            4. Update ``Q[state][action]`` in place using ``self.alpha``.
-        No return value is required.
+        Parameters
+        ----------
+        board      : Board   – state *before* taking ``action``.
+        action     : int or None – column that was played.
+                       If ``None`` the call is a *virtual* update for the
+                       opponent (no Q‑value is modified).
+        reward     : float   – immediate scalar reward (+1 win, -1 loss, 0 otherwise).
+        next_board : Board   – state *after* the move.
+        done       : bool    – True if ``next_board`` is terminal.
         """
+        # If this is a virtual update (called for the opponent) we do nothing.
+        # TODO: if action is None → return immediately.
+
+        # TODO: 1️⃣ encode the current state (s) and the next state (s')
+        # TODO: 2️⃣ retrieve the Q‑vectors for s and s' via ``get_Q``.
+        #          If ``done`` use a zero‑vector for the next state.
+        # TODO: 3️⃣ compute the target:
+        #          target = reward                     (if done)
+        #          target = reward + γ * max(Q_next)   (otherwise)
+        # TODO: 4️⃣ perform the incremental update:
+        #          Q[s][action] += α * (target - Q[s][action])
         raise NotImplementedError
 
     def train_selfplay(self, episodes=5000, max_len=42):
@@ -302,26 +357,59 @@ class QLearningAgent:
         Train the agent by letting two copies of the Q‑learning agent play
         against each other from the empty board.
 
-        * ``episodes`` – number of games to play.
-        * ``max_len`` – an upper bound on the number of moves per episode
-          (the board can hold at most ROWS*COLS pieces, but a smaller
-          bound can stop very long draws early).
+        Parameters
+        ----------
+        episodes : int – number of games to generate.
+        max_len : int – upper bound on the number of moves per episode
+                       (prevents extremely long draws).
 
-        For each episode:
-            1. Initialise a fresh ``Board``.
-            2. Alternate between the two agents (one playing as PLAYER1,
-               the other as PLAYER2) until the game ends or ``max_len`` moves
-               have been made.
-            3. After each move, compute the reward:
-               - ``+1`` for the player who just won,
-               - ``-1`` for the player who just lost,
-               - ``0`` for all non‑terminal moves and draws.
-            4. Call ``self.update`` (and the opponent's ``update``) with the
-               observed transition.
+        Training loop (what you have to implement)
+        ------------------------------------------------------------
+        for each episode:
+            1️⃣  Create a fresh ``Board`` and set ``current = PLAYER1``.
+            2️⃣  Store a copy of the board *before* the first move
+                (this will be the ``prev_board`` used for updates).
+            3️⃣  While the game is not finished:
+                a)  Choose which agent is to move this turn
+                    (the one whose ``player`` matches ``current``).
+                b)  Let that agent pick an action with ``select_action``.
+                c)  Apply the action to the board (``board.make_move``).
+                d)  Detect terminal condition:
+                    - ``winner = board.check_winner()``
+                    - ``terminal = winner != EMPTY or board.is_full()``
+                e)  Compute zero‑sum rewards:
+                       if terminal:
+                           reward_act =  +1 for the player who just won,
+                                           -1 for the opponent.
+                       else:
+                           reward_act = reward_opp = 0
+                f)  Create ``next_state`` = ``board.copy()``.
+                g)  **Real update** for the acting agent:
+                       ``act_agent.update(prev_board, move,
+                                          reward_act, next_state,
+                                          done=terminal)``.
+                h)  **Virtual update** for the opponent:
+                       ``opp_agent.update(prev_board, None,
+                                          reward_opp, next_state,
+                                          done=terminal)``.
+                i)  Set ``prev_board = next_state`` and switch ``current``.
+            4️⃣  (optional) print progress every few thousand episodes.
 
-        The method may optionally print progress every few thousand episodes,
-        but no output is required for the grading script.
+        The method does **not** return anything; after it finishes the
+        attribute ``self.Q`` contains the learned Q‑table.
         """
+        # ----------------------------------------------------------------
+        # 0️⃣  Create the opponent (same hyper‑parameters, opposite colour)
+        # ----------------------------------------------------------------
+        # TODO: instantiate ``opponent = QLearningAgent(opp_player, …)``
+
+        # ----------------------------------------------------------------
+        # 1️⃣  Main episode loop
+        # ----------------------------------------------------------------
+        # TODO: for ep in range(episodes): …
+        #       – decay epsilon here if you want an exploration schedule
+        #       – reset the board, set current player, store prev_board
+        #       – run the inner while‑not‑done loop as described above
         raise NotImplementedError
 
 
