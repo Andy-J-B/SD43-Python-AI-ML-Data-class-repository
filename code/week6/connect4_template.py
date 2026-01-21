@@ -101,16 +101,88 @@ class Board:
                 max_length = max(current_length, max_length)
             return max_length
 
+        for r in range(ROWS):
+            if run_length(self.grid[r, :]) >= WIN_LENGTH:
+                return self.grid[r, np.argmax(self.gird[r, :]) != EMPTY]
+
+        for c in range(COLS):
+            if run_length(self.grid[:, c]) >= WIN_LENGTH:
+                return self.grid[np.argmax(self.gird[:, c], c) != EMPTY]
+
+        # Diagonal (\)
+        #
+        for offset in range(-ROWS + 1, COLS):
+            diag = np.diagonal(self.grid, offset=offset)
+            if run_length(diag) >= WIN_LENGTH:
+                idx = np.argmax(diag != EMPTY)
+                r = max(0, -offset) + idx
+                c = max(0, offset) + idx
+                return self.grid[r, c]
+
+        # Diagonal (/)
+        flipped = np.fliplr(self.grid)
+        for offset in range(-ROWS + 1, COLS):
+            diag = np.diagonal(flipped, offset=offset)
+            if run_length(diag) >= WIN_LENGTH:
+                idx = np.argmax(diag != EMPTY)
+                r = max(0, -offset) + idx
+                c = COLS - 1 - (max(0, offset) + idx)
+                return self.grid[r, c]
+
     # ------------------- 5️⃣ Utility / evaluation ------------------
     def evaluate(self, player):
         """
-        Heuristic evaluation of the board from the point of view of `player`.
-        Positive = good for `player`, negative = good for opponent.
-        Simple implementation: count open 2‑ and 3‑in‑a‑row patterns.
+        Very simple linear heuristic:
+        +10 for each 3‑in‑a‑row (open at both ends),
+        +1  for each 2‑in‑a‑row (open at both ends).
+        Subtract the same values for the opponent.
         """
-        # TODO: implement a fast linear‑time eval (you can keep it extremely
-        #       simple – just count the number of 2‑in‑a‑row with both ends open).
-        raise NotImplementedError
+        opponent = PLAYER1 if player == PLAYER2 else PLAYER2
+
+        def count_patterns(p):
+            count2 = 0
+            count3 = 0
+
+            # Helper to examine a line (list of cells)
+            def scan(line):
+                nonlocal count2, count3
+                n = len(line)
+                for i in range(n - WIN_LENGTH + 1):
+                    window = line[i : i + WIN_LENGTH]
+                    # Count pieces of player p
+                    if window.count(p) == 3 and window.count(EMPTY) == 1:
+                        # ensure empties are on the ends (open)
+                        if (i > 0 and line[i - 1] == EMPTY) or (
+                            i + WIN_LENGTH < n and line[i + WIN_LENGTH] == EMPTY
+                        ):
+                            count3 += 1
+                    if window.count(p) == 2 and window.count(EMPTY) == 2:
+                        # open on both ends
+                        left_ok = i > 0 and line[i - 1] == EMPTY
+                        right_ok = i + WIN_LENGTH < n and line[i + WIN_LENGTH] == EMPTY
+                        if left_ok and right_ok:
+                            count2 += 1
+
+            # Horizontal
+            for r in range(ROWS):
+                scan(self.grid[r, :])
+            # Vertical
+            for c in range(COLS):
+                scan(self.grid[:, c])
+            # Diagonal (\)
+            for offset in range(-ROWS + 1, COLS):
+                scan(np.diagonal(self.grid, offset=offset))
+            # Diagonal (/)
+            flipped = np.fliplr(self.grid)
+            for offset in range(-ROWS + 1, COLS):
+                scan(np.diagonal(flipped, offset=offset))
+
+            return count2, count3
+
+        my2, my3 = count_patterns(player)
+        opp2, opp3 = count_patterns(opponent)
+
+        return (my3 - opp3) * 10 + (my2 - opp2)
 
     # ------------------- 6️⃣ Pretty printer -------------------------
     def __str__(self):
@@ -182,9 +254,20 @@ class MCTSNode:
     # Simple rollout policy: both players choose random legal moves until terminal.
     @staticmethod
     def _random_playout(board, start_player):
+        current = start_player
+        while True:
+            checkwin = board.check_winner()
+            if checkwin != EMPTY:
+                return checkwin
+            if board.is_full():
+                return EMPTY  # draw
+            else:
+                move = random.choice(board.legal_moves())
+                board.make_move(move, current)
+                current = PLAYER1 if current == PLAYER2 else PLAYER2
         """
         Perform a completely random playout from the given board state.
-        The method should:
+        The method 
             1. Repeatedly check if the game has ended (`board.check_winner()`
                or `board.is_full()`).
             2. If the game is not over, pick a legal move uniformly at random
@@ -215,7 +298,20 @@ class MCTSNode:
         tie randomly.
         """
         # TODO: implement the Monte‑Carlo evaluation as described.
-        raise NotImplementedError
+        legal_moves = self.board.legal_moves()
+        win_counts = {}
+        for move in legal_moves:
+            win_counts[move] = 0
+        for move in legal_moves:
+            for _ in range(simulations):
+                trial = board.copy()
+                trial.make_move(move, self.player)
+                winner = self._random_playout(
+                    trial, PLAYER1 if self.player == PLAYER2 else PLAYER2
+                )
+                if winner = self.player:
+                    win_counts[move] += 1
+        best_move = max(legal_moves, key = lambda move : win_counts[move]   )
 
 
 # ----------------------------------------------------------------------
@@ -477,6 +573,25 @@ def play_human_vs_mcts(simulations=60):
     The function should **not** modify the MCTSNode class – it only uses
     the public ``simulate`` method.
     """
+    board = Board() 
+    current = PLAYER1 #oh lol
+    
+    while True:
+        print(board)
+        winner = board.check_winner() 
+        if winner != EMPTY:
+            print(f"Winner: {'X (MCTS)' if winner == PLAYER1 else 'O (Human)'}")
+            break
+        else:
+            if board.is_full():
+                print("Draw.")
+                break
+        
+        if current == PLAYER1:
+            mcts = MCTSNode(board, player) 
+            move = mcts.simulate(simulations=simulations)
+            # ty
+
     # TODO: implement the loop described above.
     raise NotImplementedError
 
