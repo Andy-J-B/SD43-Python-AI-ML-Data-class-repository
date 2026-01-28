@@ -370,12 +370,21 @@ class QLearningAgent:
         """
         # TODO: flatten the array (row‑major) and join the integer values.
         #       Hint:  board.grid.ravel()  gives a 1‑D view.
-        raise NotImplementedError
+        boardstr = board.grid.ravel()
+        stringparts = []
+        for cell in boardstr:
+            intvalue =  int(cell)
+            strvalue = str(intvalue)
+            stringparts.append(strvalue)
+
+        return "".join(stringparts)
+
 
     # ------------------------------------------------------------------
     # 3️⃣  Get (or create) the Q‑vector for a state
     # ------------------------------------------------------------------
     def get_Q(self, state):
+        
         """
         Return the Q‑value vector for a given ``state``.
         If the state has never been seen, initialise an entry of zeros.
@@ -390,8 +399,9 @@ class QLearningAgent:
         """
         # TODO: if ``state`` not yet a key → create ``np.zeros(COLS)``.
         # TODO: return the stored array.
-        raise NotImplementedError
-
+        if state not in self.Q:
+            self.Q[state] = np.zeros(COLS)
+        return self.Q[state]
     # ------------------------------------------------------------------
     # 4️⃣  ε‑greedy action selection
     # ------------------------------------------------------------------
@@ -414,7 +424,15 @@ class QLearningAgent:
         # TODO: 3️⃣ with probability ε return a random legal move
         # TODO: 4️⃣ otherwise select the legal move(s) with maximal Q,
         #          break ties randomly, and return the chosen column.
-        raise NotImplementedError
+        legal_moves = board.legal_moves()
+        state = self.encode(board)
+        q = self.get_Q(state)
+        if random.Random < self.epsilon:
+            return random.choice(legal_moves)
+        best_q = max(q[c] for c in legal_moves)
+        best_moves = [c for c in legal_moves if q[c] == best_q]
+        return random.choice(best_moves)
+
 
     # ------------------------------------------------------------------
     # 5️⃣  Q‑learning update rule
@@ -446,7 +464,14 @@ class QLearningAgent:
         #          target = reward + γ * max(Q_next)   (otherwise)
         # TODO: 4️⃣ perform the incremental update:
         #          Q[s][action] += α * (target - Q[s][action])
-        raise NotImplementedError
+        if (action == None):
+            return
+        state = self.encode(board)
+        state_next = self.encode(next_board)
+        q = self.get_Q(state)
+        next_q = self.get_Q(state_next) if not done else np.zeros(COLS)
+        target = reward + self.gamma * np.max(next_q)
+        q[action] += self.alpha * (target - q[action])
 
     def train_selfplay(self, episodes=5000, max_len=42):
         """
