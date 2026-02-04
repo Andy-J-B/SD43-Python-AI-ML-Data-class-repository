@@ -531,9 +531,41 @@ class QLearningAgent:
         #       – decay epsilon here if you want an exploration schedule
         #       – reset the board, set current player, store prev_board
         #       – run the inner while‑not‑done loop as described above
-        raise NotImplementedError
-
-
+        opponentplayer = PLAYER1 if self.player == PLAYER2 else PLAYER2
+        opponent = QLearningAgent(opponentplayer, alpha=self.alpha, gamma=self.gamma, epsilon=0.5)
+        max_length = 42
+        epsilon_end=0.05
+        decay_rate = 0.9995
+        for ep in range(episodes):
+            current = PLAYER1
+            board = Board()
+            done = False
+            previous_board = board.copy()
+            epsilon = max(epsilon_end, epsilon * decay_rate)
+            self.epsilon = opponent.epsilon = epsilon
+            while not done:
+                agent = self if current == self.player else opponent
+                opponent_agent = opponent if agent == self else self
+                move = agent.select_action(board)
+                board.make_move(move, current)
+                winner = board.check_winner()
+                terminal = winner != EMPTY or board.is_full()
+                if terminal:
+                    reward_agent = 1 if winner == agent.player else -1
+                    reward_opponent = -reward_agent
+                else:
+                    reward_agent = 0 
+                    reward_opponent = 0
+                next_state = board.copy()
+                agent.update(previous_board, move, reward_agent, next_state, done=terminal)
+                opponent_agent.update(previous_board, None, reward_opponent, next_state, done=terminal)
+                previous_board = next_state 
+                current = PLAYER1 if current == PLAYER2 else PLAYER2
+                done = terminal
+            if (ep + 1) % 1000 == 0:
+                print(f"Episode {ep + 1} completed.")
+        return 
+    
 # ----------------------------------------------------------------------
 # 4️⃣ Simple UI – text based
 # ----------------------------------------------------------------------
@@ -643,15 +675,15 @@ def play_human_vs_qlearning(agent, epsilon=0.0):
     #      the agent was trained with).
     # TODO: set the exploration rate of the agent
     # agent.epsilon = epsilon
-
+    agent.epsilon = epsilon
     # 1b.  Create a brand‑new, empty board.
     # TODO: instantiate the Board class
     # board = ...
-
+    board = Board()
     # 1c.  Decide who moves first.  In this demo the AI (PLAYER1, “X”) starts.
     # TODO: set the variable that tracks whose turn it is
     # current = ...
-
+    current = PLAYER1
     # 1d.  Greet the players.
     print("\n=== CONNECT‑FOUR – Human (O) vs. Q‑Learning AI (X) ===")
 
@@ -665,62 +697,39 @@ def play_human_vs_qlearning(agent, epsilon=0.0):
         # --------------------------------------------------------------
         # TODO: print the board so the human can see the state
         # print(board)
-
+        print(board)
         # --------------------------------------------------------------
         # 2b.  Check for a terminal condition (win or draw)
         # --------------------------------------------------------------
         # TODO: ask the board who the winner is (if any)
         # winner = ...
-
+        winner = board.check_winner()
+        if winner != EMPTY:
+            break
+        if board.is_full():
+            break
+        
         # If somebody won → announce and break out of the loop
         # TODO: if winner != EMPTY: ... (print winner & break)
-
-        # If the board is full → draw
-        # TODO: if board.is_full(): ... (print draw & break)
-
-        # --------------------------------------------------------------
-        # 2c.  Decide which player makes the next move
-        # --------------------------------------------------------------
-        if current == PLAYER1:  # ----- AI (X) -----
-            # TODO: ask the Q‑learning agent for its move on the current board
-            # col = ...
-
-            # Optional: show the AI's choice so the human can follow the game
-            print(f"AI (X) chooses column {col}")
-
-            # TODO: apply the move to the board (remember to pass PLAYER1)
-            # board.make_move(col, PLAYER1)
-
-        else:  # ----- Human (O) -----
-            # TODO: retrieve the list of columns that are still legal
-            # legal = ...
-
-            # Prompt the user until they type a legal column number
+        if current == PLAYER1:
+            col = agent.select_action(board)
+            board.make_move(col, PLAYER1)
+        else:
+            legal = board.legal_moves()
             col = None
             while col not in legal:
                 try:
-                    # TODO: ask the user for input and convert to int
-                    # col = int(input(f"Your turn (O). Choose column {legal}: "))
-                    pass
+                    col = int(input(f"Your turn. Choose: {legal}"))
                 except ValueError:
-                    # If they typed something that isn’t an int, just ask again
                     continue
+            board.make_move(col, PLAYER2)
+        current = PLAYER1 if current == PLAYER2 else PLAYER2
+        
 
-            # TODO: record the human move on the board (use PLAYER2)
-            # board.make_move(col, PLAYER2)
-
-        # --------------------------------------------------------------
-        # 2d.  Switch the player for the next iteration of the loop
-        # --------------------------------------------------------------
-        # TODO: toggle ``current`` between PLAYER1 and PLAYER2
-        # current = ...
-
-    # ------------------------------------------------------------------
-    # 3️⃣  End of function – nothing to return (the game is printed)
-    # ------------------------------------------------------------------
 
 
 if __name__ == "__main__":
     # play_human_vs_ai()
     # play_human_vs_mcts()
+    play_human_vs_qlearning()
     pass
