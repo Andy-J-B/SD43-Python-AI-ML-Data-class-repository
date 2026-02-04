@@ -34,7 +34,7 @@ def get_device() -> torch.device:
     **DO NOT** change the name or the return type – the tests rely on it.
     """
     # TODO: implement device selection (CUDA if available, else CPU)
-    raise NotImplementedError
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # -------------------------------------------------
@@ -45,14 +45,22 @@ def build_model() -> nn.Module:
     Build and return a tiny convolutional neural network for MNIST.
     Architecture (you may implement with nn.Sequential or a custom class):
         Conv2d(1 → 16, kernel=3, padding=1) → ReLU → MaxPool2d(2)
+        ^ bro i read this as covid
         Conv2d(16 → 32, kernel=3, padding=1) → ReLU → MaxPool2d(2)
         Flatten
         Linear(<computed‑in_features> → 128) → ReLU
         Linear(128 → 10)      # 10 digit classes
     The function should **return** an instantiated nn.Module.
     """
+
     # TODO: implement the model
-    raise NotImplementedError
+    class TinyCNN(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.features = nn.Sequential(
+                nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, padding=1),
+                nn.ReLU(in_place=True),
+            )
 
 
 # -------------------------------------------------
