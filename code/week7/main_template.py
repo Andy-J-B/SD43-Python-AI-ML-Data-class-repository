@@ -53,7 +53,7 @@ def preprocess_image(image_path: str) -> torch.Tensor:
              pixel values to the range [0, 1] and adds a channel dimension,
            – normalises the tensor with the MNIST statistics
              `mean=0.1307`, `std=0.3081`.
-        4. Apply the transform to the Pillow image.
+        4. Apply the transform to the Pillow image.#shrek
         5. `unsqueeze(0)` the result so the final shape is
            `(1, 1, 28, 28)` (batch‑size = 1, channel = 1).
         6. Return the resulting tensor.
@@ -62,7 +62,17 @@ def preprocess_image(image_path: str) -> torch.Tensor:
     opened; otherwise it returns the tensor.
     """
     # ---------- TODO: implement the preprocessing steps ----------
-    raise NotImplementedError
+    image = Image.open(image_path).convert("L")
+    image = image.resize((28, 28), Image.BILINEAR)
+    transform = T.Compose(
+        [
+            T.ToTensor(),
+            T.Normalize((0.1307,), (0.3081,)),
+        ]
+    )
+    tensor = transform(image).unsqueeze(0)
+    return tensor
+
     # -------------------------------------------------------------
 
 
@@ -89,7 +99,13 @@ def predict_image(image_path: str, model: nn.Module, device: torch.device) -> in
     Do **not** modify the model’s parameters.
     """
     # ---------- TODO: implement the inference pipeline -------------
-    raise NotImplementedError
+    tensor = preprocess_image(image_path)
+    model.eval()
+    tensor = tensor.to(device)
+    with torch.no_grad():
+        logits = model(tensor)
+        pred = logits.argmax(dim=1).item()
+    return pred
     # -------------------------------------------------------------
 
 
