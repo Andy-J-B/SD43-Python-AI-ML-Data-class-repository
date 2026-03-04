@@ -1,22 +1,26 @@
-# gridworld_template.py
+#!/usr/bin/env python3
 # -------------------------------------------------------------
-# 5×5 “Frozen Lake” grid world + Q‑learning skeleton.
-# Students will fill in the sections marked # TODO.
+# gridworld_student.py
 # -------------------------------------------------------------
+# Student version of the 5×5 Frozen‑Lake Q‑learning example.
+# Fill in every "TODO" section following the step‑by‑step comments.
+# -------------------------------------------------------------
+
+import time
+from typing import List, Tuple
 
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Tuple, List
+from matplotlib import animation
+from matplotlib.patches import Rectangle
 
 # ------------------------------------------------------------------
-# 0️⃣  Global configuration (feel free to change later)
+# 0️⃣  Configuration (you can change values if you want)
 # ------------------------------------------------------------------
-ROWS, COLS = 5, 5  # size of the grid
-START = (0, 0)  # top‑left corner
-GOAL = (4, 4)  # bottom‑right corner
-
-# holes: positions that finish the episode with a big penalty.
-HOLES = {(1, 2), (2, 3), (3, 1), (3, 3)}  # you can edit / add more
+ROWS, COLS = 5, 5
+START = (0, 0)
+GOAL = (4, 4)
+HOLES = {(1, 2), (2, 3), (3, 1), (3, 3)}  # set of hole coordinates
 
 ACTIONS = {
     0: (-1, 0),  # up
@@ -27,127 +31,105 @@ ACTIONS = {
 N_ACTIONS = len(ACTIONS)
 
 
-# ------------------------------------------------------------------
-# 1️⃣  Simple environment – students only edit the doc‑strings.
-# ------------------------------------------------------------------
+# ==================================================================
+# 1️⃣  Environment – GridWorld
+# ==================================================================
 class GridWorld:
-    """
-    Represent the frozen lake as a 2‑D NumPy array.
-    The state is stored as a (row, col) tuple.
-    """
+    """Simple frozen‑lake environment."""
 
     def __init__(self):
+        """Create a fresh environment – simply call reset()."""
         self.reset()
 
-    # --------------------------------------------------------------
+    # ------------------------------------------------------------------
     def reset(self) -> Tuple[int, int]:
         """
-        Put the agent back at the START position.
-        Returns the initial state.
+        Place the agent back at START and return the current state.
         """
-        # TODO: set the current position to START and return it
-        self.pos = START
-        return self.pos
+        # TODO: set the internal position to START and return it
+        pass
 
-    # --------------------------------------------------------------
+    # ------------------------------------------------------------------
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool]:
         """
-        Apply *action* (0=up,1=down,2=left,3=right).
-
-        Returns:
-            next_state (row, col)
-            reward (float)
-            done   (bool) – True if we reached a hole or the goal.
+        Execute `action` (0‑3) and return a tuple:
+            (next_state, reward, done)
         """
-        # TODO: compute the new position respecting the grid borders.
-        #       Use ACTIONS[action] to get the delta.
-        dr, dc = ACTIONS[action]
-        r, c = self.pos
-        nr, nc = r + dr, c + dc
+        # TODO:
+        #   1. Look up the delta (dr, dc) in ACTIONS.
+        #   2. Compute the candidate new position (nr, nc).
+        #   3. If the new position would leave the grid, keep the old one.
+        #   4. Update self.pos.
+        #   5. Return (pos, reward, done) according to:
+        #        * GOAL  → reward  1.0, done True
+        #        * HOLE  → reward -1.0, done True
+        #        * otherwise → reward -0.01, done False
+        pass
 
-        # stay inside the board
-        if nr < 0 or nr >= ROWS or nc < 0 or nc >= COLS:
-            nr, nc = r, c  # illegal move → stay where we are
-
-        self.pos = (nr, nc)
-
-        # TODO: decide the reward and termination flag
-        if self.pos == GOAL:
-            return self.pos, 1.0, True  # reached the goal
-        if self.pos in HOLES:
-            return self.pos, -1.0, True  # fell in a hole
-        return self.pos, -0.01, False  # normal step (small penalty)
-
-    # --------------------------------------------------------------
+    # ------------------------------------------------------------------
     def get_valid_actions(self) -> List[int]:
         """
-        In this simple grid all 4 actions are always legal
-        (the step function will just keep you in place if you hit a wall).
-        Returns the list [0,1,2,3].
+        Return a list of action IDs that are allowed in the current state.
+        In this simple world all four moves are always allowed
+        (the step() method will simply bounce off walls).
         """
-        # TODO: return a list of all action indices
-        return list(ACTIONS.keys())
+        # TODO: return the list of keys from ACTIONS
+        pass
 
-    # --------------------------------------------------------------
+    # ------------------------------------------------------------------
     def render(self) -> None:
         """
-        Print a tiny ASCII picture of the board.
-        S = start, G = goal, H = hole, A = agent.
+        Print a quick ASCII representation of the board.
+        Useful for debugging or the console play‑through.
         """
-        # TODO: build a 2‑D char array and print it.
-        board = np.full((ROWS, COLS), ".")
-        for hr, hc in HOLES:
-            board[hr, hc] = "H"
-        board[GOAL] = "G"
-        board[START] = "S"
-        r, c = self.pos
-        board[r, c] = "A"
-        for row in board:
-            print(" ".join(row))
-        print()
+        # TODO:
+        #   * create a 2‑D array of "." strings
+        #   * set HOLE cells to "H", the GOAL to "G", START to "S"
+        #   * mark the agent's current location with "A"
+        #   * print each row joined by spaces, then a blank line
+        pass
 
 
-# ------------------------------------------------------------------
-# 2️⃣  Q‑Learning agent – students fill in the learning rule.
-# ------------------------------------------------------------------
+# ==================================================================
+# 2️⃣  Q‑Learning Agent (tabular)
+# ==================================================================
 class QLearningAgent:
-    """
-    Tabular Q‑learning agent.  The Q‑table is a NumPy array
-    with shape (n_states, n_actions).
-    """
+    """Tabular Q‑learning with ε‑greedy exploration."""
 
     def __init__(self, lr: float = 0.1, gamma: float = 0.99, eps: float = 0.2):
-        self.lr = lr  # learning rate α
-        self.gamma = gamma  # discount factor γ
-        self.eps = eps  # ε for ε‑greedy exploration
+        """
+        Initialise learning rate, discount factor, exploration rate,
+        and a zero‑filled Q‑table of shape (ROWS*COLS, N_ACTIONS).
+        """
+        # TODO: store lr, gamma, eps and allocate the Q‑table
+        pass
 
-        # TODO: initialise a Q‑table of zeros.
-        #       Number of states = ROWS * COLS.
-        self.Q = np.zeros((ROWS * COLS, N_ACTIONS))
-
-    # --------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Helper: convert a (row, col) state into a flat index 0 … ROWS*COLS‑1
+    # ------------------------------------------------------------------
     def _state_to_index(self, state: Tuple[int, int]) -> int:
-        """Convert (row, col) into a single integer 0 … ROWS*COLS‑1."""
-        r, c = state
-        return r * COLS + c
+        # TODO: return row * COLS + col
+        pass
 
-    # --------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # ε‑greedy action selection
+    # ------------------------------------------------------------------
     def select_action(self, state: Tuple[int, int]) -> int:
         """
-        ε‑greedy policy.
-        With probability eps pick a random valid action,
-        otherwise pick the action with the highest Q‑value.
+        With probability eps choose a random action,
+        otherwise choose the action(s) with maximal Q-value
+        (break ties randomly).
         """
-        # TODO: implement the ε‑greedy choice.
-        if np.random.rand() < self.eps:
-            return np.random.choice(N_ACTIONS)
-        idx = self._state_to_index(state)
-        # break ties randomly
-        max_q = np.max(self.Q[idx])
-        best = np.where(self.Q[idx] == max_q)[0]
-        return np.random.choice(best)
+        # TODO:
+        #   * draw a uniform random number
+        #   * if < eps → return np.random.choice(N_ACTIONS)
+        #   * otherwise look up the row in Q, find max value, get all actions
+        #     that achieve this max, and randomly pick one of them.
+        pass
 
-    # --------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Standard Q‑learning update
+    # ------------------------------------------------------------------
     def update(
         self,
         state: Tuple[int, int],
@@ -157,85 +139,226 @@ class QLearningAgent:
         done: bool,
     ) -> None:
         """
-        Apply the Q‑learning update rule:
-        Q(s,a) ← Q(s,a) + α [ r + γ max_a' Q(s',a') – Q(s,a) ]
+        Apply the Q‑learning formula:
+            Q(s,a) ← Q(s,a) + lr * (target - Q(s,a))
+
+        where target = r + γ * max_a' Q(s',a')  (unless `done`).
         """
-        # TODO: write the update formula.
-        s_idx = self._state_to_index(state)
-        ns_idx = self._state_to_index(next_state)
-        target = reward
-        if not done:
-            target += self.gamma * np.max(self.Q[ns_idx])
-        self.Q[s_idx, action] += self.lr * (target - self.Q[s_idx, action])
+        # TODO:
+        #   * translate state and next_state to flat indices
+        #   * compute the target (add discounted max‑Q if not done)
+        #   * perform the incremental update on Q[s_idx, action]
+        pass
 
 
-# ------------------------------------------------------------------
-# 3️⃣  Training loop (still a skeleton)
-# ------------------------------------------------------------------
+# ==================================================================
+# 3️⃣  Training loop
+# ==================================================================
 def train_agent(
-    num_episodes: int = 200, max_steps: int = 100, render_every: int = 0
+    num_episodes: int = 300,
+    max_steps: int = 50,
+    render_every: int = 0,
 ) -> QLearningAgent:
     """
-    Run the Q‑learning algorithm for *num_episodes*.
-    If render_every > 0 the environment is printed every that many episodes.
-    Returns the trained agent.
+    Run `num_episodes` episodes of interaction with a fresh GridWorld.
+    Returns the trained QLearningAgent.
     """
-    env = GridWorld()
-    agent = QLearningAgent()
-
-    for ep in range(1, num_episodes + 1):
-        state = env.reset()
-        done = False
-        step = 0
-
-        while not done and step < max_steps:
-            # 1️⃣ Choose an action
-            action = agent.select_action(state)
-
-            # 2️⃣ Apply it to the environment
-            next_state, reward, done = env.step(action)
-
-            # 3️⃣ Update Q‑table
-            agent.update(state, action, reward, next_state, done)
-
-            state = next_state
-            step += 1
-
-        # OPTIONAL visualisation of the board every few episodes
-        if render_every and ep % render_every == 0:
-            print(f"\nEpisode {ep}")
-            env.render()
-            plot_value_function(agent, title=f"Episode {ep}")
-
-    return agent
+    # TODO:
+    #   1. Create a GridWorld instance.
+    #   2. Create a QLearningAgent (you may use the default hyper‑parameters).
+    #   3. Loop over episodes (1 … num_episodes)
+    #       a. reset the environment → state
+    #       b. loop over steps (max_steps) until done
+    #           i.   choose action with agent.select_action(state)
+    #           ii.  apply env.step(action) → next_state, reward, done
+    #           iii. agent.update(state, action, reward, next_state, done)
+    #           iv.  set state = next_state
+    #       c. (optional) every `render_every` episodes call env.render()
+    #          and plot_value_function() to visualise progress.
+    #   4. Return the trained agent.
+    pass
 
 
-# ------------------------------------------------------------------
-# 4️⃣  Helper to plot a heat‑map of the learned state‑value (max Q)
-# ------------------------------------------------------------------
+# ==================================================================
+# 4️⃣  Plotting helpers (you don't need to modify these)
+# ==================================================================
 def plot_value_function(agent: QLearningAgent, title: str = "Value function"):
-    """
-    Show a 5×5 heat map where each cell contains max_a Q(s,a).
-    """
-    # TODO: reshape the max‑Q values into a ROWS×COLS matrix and plot.
+    """Draw a heat‑map of max_a Q(s,a)."""
     V = np.max(agent.Q, axis=1).reshape((ROWS, COLS))
+
     plt.figure(figsize=(5, 4))
     plt.title(title)
     plt.imshow(V, cmap="viridis", origin="upper")
     plt.colorbar(label="max Q")
     plt.xticks(np.arange(COLS))
     plt.yticks(np.arange(ROWS))
+
+    for r in range(ROWS):
+        for c in range(COLS):
+            plt.text(
+                c,
+                r,
+                f"{V[r, c]:.2f}",
+                ha="center",
+                va="center",
+                color="white",
+                fontsize=8,
+            )
     plt.show()
 
 
-# ------------------------------------------------------------------
-# 5️⃣  Main entry point – students just run it.
-# ------------------------------------------------------------------
-if __name__ == "__main__":
-    # Feel free to change the numbers for extra practice.
-    trained_agent = train_agent(
-        num_episodes=300, max_steps=50, render_every=0
-    )  # set to e.g. 50 to watch progress
+def plot_policy(agent: QLearningAgent, title: str = "Greedy policy"):
+    """Overlay arrows showing the best action for each state."""
+    V = np.max(agent.Q, axis=1).reshape((ROWS, COLS))
+    best_action = np.argmax(agent.Q, axis=1).reshape((ROWS, COLS))
 
-    # Final visualisation
-    plot_value_function(trained_agent, title="Final learned value function")
+    # arrow vectors (dy, dx) for each action id
+    action_vec = {
+        0: (-0.4, 0),  # up
+        1: (0.4, 0),  # down
+        2: (0, -0.4),  # left
+        3: (0, 0.4),  # right
+    }
+
+    fig, ax = plt.subplots(figsize=(5, 4))
+    im = ax.imshow(V, cmap="viridis", origin="upper")
+    fig.colorbar(im, ax=ax, label="max Q")
+    ax.set_xticks(np.arange(COLS))
+    ax.set_yticks(np.arange(ROWS))
+
+    for r in range(ROWS):
+        for c in range(COLS):
+            act = best_action[r, c]
+            dy, dx = action_vec[act]
+            ax.arrow(
+                c,
+                r,
+                dx,
+                dy,
+                head_width=0.15,
+                head_length=0.15,
+                fc="white",
+                ec="white",
+                linewidth=1.2,
+            )
+
+    # draw holes/start/goal for reference
+    for hr, hc in HOLES:
+        ax.add_patch(Rectangle((hc - 0.5, hr - 0.5), 1, 1, facecolor="black"))
+    ax.text(
+        GOAL[1],
+        GOAL[0],
+        "G",
+        ha="center",
+        va="center",
+        color="yellow",
+        fontsize=14,
+        weight="bold",
+    )
+    ax.text(
+        START[1],
+        START[0],
+        "S",
+        ha="center",
+        va="center",
+        color="cyan",
+        fontsize=14,
+        weight="bold",
+    )
+
+    ax.set_title(title)
+    plt.show()
+
+
+# ==================================================================
+# 5️⃣  Console play‑through (greedy policy)
+# ==================================================================
+def play_greedy(
+    agent: QLearningAgent,
+    env: GridWorld,
+    max_steps: int = 50,
+    delay: float = 0.5,
+) -> None:
+    """
+    Run ONE episode after training, always picking the greedy action,
+    and print the board after each move.
+    """
+    # TODO:
+    #   * reset the environment, render the initial board.
+    #   * loop until done or max_steps:
+    #         – find the best action for the current state (break ties randomly)
+    #         – step the environment
+    #         – render the board, sleep for `delay` seconds
+    #   * after the loop print SUCCESS if the final position is GOAL,
+    #     otherwise print FAILURE and how many steps were taken.
+    pass
+
+
+# ==================================================================
+# 6️⃣  Matplotlib animation (greedy policy) – optional
+# ==================================================================
+def animate_greedy(
+    agent: QLearningAgent,
+    env: GridWorld,
+    max_steps: int = 50,
+    interval: int = 400,
+) -> animation.FuncAnimation:
+    """
+    Build a Matplotlib FuncAnimation that shows the agent moving
+    according to its greedy policy.
+    """
+    # TODO:
+    #   * pre‑compute the greedy action for every state: greedy_action = np.argmax(agent.Q, axis=1)
+    #   * create a heat‑map figure of max Q values (same code as plot_value_function)
+    #   * draw holes/start/goal markers on the axes
+    #   * add a red square (Rectangle) that will be moved each frame
+    #   * define `init()` to place the marker at the start state
+    #   * define `update(frame)`:
+    #         – if episode finished, just return the marker
+    #         – otherwise look up the greedy action for the current state,
+    #           step the environment, move the marker, update counters
+    #   * build and return the FuncAnimation object.
+    pass
+
+
+# ==================================================================
+# 7️⃣  Main – train + visualise + play
+# ==================================================================
+if __name__ == "__main__":
+
+    # --------------------------------------------------------------
+    # 1️⃣  Train the agent
+    # --------------------------------------------------------------
+    # TODO: call train_agent() with the desired number of episodes etc.
+    # Example (feel free to change the numbers):
+    # trained = train_agent(num_episodes=500, max_steps=50, render_every=0)
+    pass
+
+    # --------------------------------------------------------------
+    # 2️⃣  Show the final value‑function heat‑map
+    # --------------------------------------------------------------
+    # TODO: uncomment after you have a trained agent
+    # plot_value_function(trained, title="Final learned value function")
+
+    # --------------------------------------------------------------
+    # 3️⃣  (Optional) draw the greedy policy arrows
+    # --------------------------------------------------------------
+    # plot_policy(trained, title="Greedy policy (arrows)")
+
+    # --------------------------------------------------------------
+    # 4️⃣  Console play‑through – watch the robot after training
+    # --------------------------------------------------------------
+    # env = GridWorld()
+    # print("\n=== Console play‑through (greedy) ===\n")
+    # play_greedy(trained, env, max_steps=30, delay=0.4)
+
+    # --------------------------------------------------------------
+    # 5️⃣  (Optional) Matplotlib animation
+    # --------------------------------------------------------------
+    # env_anim = GridWorld()
+    # anim = animate_greedy(trained, env_anim, max_steps=30, interval=500)
+    # plt.show()   # blocks until you close the window
+
+    # --------------------------------------------------------------
+    # End of script
+    # --------------------------------------------------------------
