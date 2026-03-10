@@ -40,23 +40,16 @@ def download_dataset():
     # STEP 1 – build the command string.
     # Example:  kaggle datasets download -d marquis03/cats-and-dogs
     # --------------------------------------------------------------
-    # cmd = f"kaggle datasets download -d {DATASET_NAME}"
 
     # --------------------------------------------------------------
     # STEP 2 – execute the command.  You may use os.system() or
     # subprocess.run() (the latter gives you more control).
     # --------------------------------------------------------------
-    # os.system(cmd)   # simple way
-    # # OR, using subprocess:
-    # # import subprocess
-    # # subprocess.run(cmd, shell=True, check=True)
 
     # --------------------------------------------------------------
     # OPTIONAL: rename the downloaded zip to the constant ZIP_NAME
     # (the Kaggle CLI may use a different file name).
     # --------------------------------------------------------------
-    # if os.path.exists("dataset.zip"):          # <-- adjust if needed
-    #     os.rename("dataset.zip", ZIP_NAME)
 
     pass
 
@@ -71,24 +64,18 @@ def unzip_dataset():
     # --------------------------------------------------------------
     # STEP 1 – inform the user something is happening
     # --------------------------------------------------------------
-    # print("Unzipping dataset...")
 
     # --------------------------------------------------------------
     # STEP 2 – make sure the destination folder exists
     # --------------------------------------------------------------
-    # if not os.path.exists(EXTRACT_FOLDER):
-    #     os.makedirs(EXTRACT_FOLDER)
 
     # --------------------------------------------------------------
     # STEP 3 – open the zip file and extract all members
     # --------------------------------------------------------------
-    # with zipfile.ZipFile(ZIP_NAME, "r") as zip_ref:
-    #     zip_ref.extractall(EXTRACT_FOLDER)
 
     # --------------------------------------------------------------
     # STEP 4 – let the user know we are done
     # --------------------------------------------------------------
-    # print("Extraction complete.")
 
     pass
 
@@ -104,14 +91,10 @@ def create_clean_folders():
     # --------------------------------------------------------------
     # STEP 1 – create CATS_FOLDER if it does not exist
     # --------------------------------------------------------------
-    # if not os.path.exists(CATS_FOLDER):
-    #     os.makedirs(CATS_FOLDER)
 
     # --------------------------------------------------------------
     # STEP 2 – create DOGS_FOLDER if it does not exist
     # --------------------------------------------------------------
-    # if not os.path.exists(DOGS_FOLDER):
-    #     os.makedirs(DOGS_FOLDER)
 
     pass
 
@@ -211,24 +194,18 @@ def cleanup():
     # --------------------------------------------------------------
     # STEP 1 – inform the user that cleanup is starting
     # --------------------------------------------------------------
-    # print("Cleaning up unnecessary files...")
 
     # --------------------------------------------------------------
     # STEP 2 – remove the zip archive if it exists
     # --------------------------------------------------------------
-    # if os.path.exists(ZIP_NAME):
-    #     os.remove(ZIP_NAME)
 
     # --------------------------------------------------------------
     # STEP 3 – delete the extraction folder (and everything inside)
     # --------------------------------------------------------------
-    # if os.path.exists(EXTRACT_FOLDER):
-    #     shutil.rmtree(EXTRACT_FOLDER)
 
     # --------------------------------------------------------------
     # STEP 4 – final message
     # --------------------------------------------------------------
-    # print("Cleanup complete.")
 
     pass
 
@@ -240,41 +217,31 @@ if __name__ == "__main__":
     # --------------------------------------------------------------
     # STEP 1 – download the zip from Kaggle
     # --------------------------------------------------------------
-    # download_dataset()
 
     # --------------------------------------------------------------
     # STEP 2 – unzip the archive into EXTRACT_FOLDER
     # --------------------------------------------------------------
-    # unzip_dataset()
 
     # --------------------------------------------------------------
     # STEP 3 – make sure the destination folders exist
     # --------------------------------------------------------------
-    # create_clean_folders()
 
     # --------------------------------------------------------------
     # STEP 4 – locate the original cat and dog image folders
     # --------------------------------------------------------------
-    # cat_source, dog_source = find_image_folders()
 
     # --------------------------------------------------------------
     # STEP 5 – copy up to MAX_IMAGES_PER_CLASS pictures for each class
     # --------------------------------------------------------------
-    # copy_limited_images(cat_source, CATS_FOLDER, MAX_IMAGES_PER_CLASS)
-    # copy_limited_images(dog_source, DOGS_FOLDER, MAX_IMAGES_PER_CLASS)
 
     # --------------------------------------------------------------
     # STEP 6 – delete the zip file and the raw extraction folder
     # --------------------------------------------------------------
-    # cleanup()
 
     # --------------------------------------------------------------
     # STEP 7 – let the user know everything succeeded and show
     #          how many files we ended up with.
     # --------------------------------------------------------------
-    # print("Dataset prepared successfully!")
-    # print("Cats:", len(os.listdir(CATS_FOLDER)))
-    # print("Dogs:", len(os.listdir(DOGS_FOLDER)))
 
     # --------------------------------------------------------------
     # END OF SCRIPT – replace all the ``pass`` statements (and delete
