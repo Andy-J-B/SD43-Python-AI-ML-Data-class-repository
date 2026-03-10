@@ -143,8 +143,34 @@ def main() -> None:
     conditions) and otherwise finish with a single line showing the
     prediction.
     """
+
     # ---------- TODO: implement the CLI logic --------------------
-    raise NotImplementedError
+    parser = argparse.ArgumentParser(
+        description="load trained model and classifying image"
+    )
+    parser.add_argument("image_path", type=str, help="path to png or jpeg file")
+    parser.add_argument(
+        "--ckpt", type=str, default="mnist.pt", help="path to the model"
+    )
+    args = parser.parse_args()
+    img_path = Path(args.image_path)
+    if not img_path.is_file():
+        sys.exit("image not fount")
+
+    device = get_device
+    model = build_model().to(device)
+    try:
+        state_dict = torch.load(args.ckpt, map_location=device)
+        model.load_state_dict(state_dict)
+        print(f"Loaded checkpoint '{args.ckpt}'")
+
+    except FileNotFoundError:
+        sys.exit("Error")
+    except Exception as exc:
+        sys.exit(f"Error: {exc}")
+
+    digit = predict_image(str(img_path), model, device)
+    print(f"digit is: {digit}")
     # -------------------------------------------------------------
 
 

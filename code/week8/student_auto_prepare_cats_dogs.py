@@ -135,32 +135,20 @@ def find_image_folders():
     # --------------------------------------------------------------
     # STEP 1 – initialise placeholders (they will be overwritten)
     # --------------------------------------------------------------
-    # cat_path = None
-    # dog_path = None
+    cat_path = None
+    dog_path = None
 
-    # --------------------------------------------------------------
-    # STEP 2 – recursively walk the extraction folder
-    # --------------------------------------------------------------
-    # for root, dirs, files in os.walk(EXTRACT_FOLDER):
-    #     for directory in dirs:
-    #         # compare lowercase names – be permissive
-    #         if directory.lower() in ("cat", "cats"):
-    #             cat_path = os.path.join(root, directory)
-    #         if directory.lower() in ("dog", "dogs"):
-    #             dog_path = os.path.join(root, directory)
+    for root, dirs, files in os.walk(EXTRACT_FOLDER):
+        for directory in dirs:
+            if directory.lower() == "cat":
+                cat_path = os.path.join(root, directory)
+            if directory.lower() == "dog":
+                dog_path = os.path.join(root, directory)
 
-    # --------------------------------------------------------------
-    # STEP 3 – optional safety check: raise an error if we didn't find a folder
-    # --------------------------------------------------------------
-    # if cat_path is None or dog_path is None:
-    #     raise FileNotFoundError("Could not locate cat or dog image folders inside the zip.")
+    if not cat_path or not dog_path:
+        raise NotADirectoryError
 
-    # --------------------------------------------------------------
-    # STEP 4 – return the two paths
-    # --------------------------------------------------------------
-    # return cat_path, dog_path
-
-    pass
+    return cat_path, dog_path
 
 
 # ------------------------------------------------------------------
@@ -170,6 +158,7 @@ def copy_limited_images(source_folder, destination_folder, max_images):
     """
     Copy at most ``max_images`` files from ``source_folder`` into
     ``destination_folder``.  The function stops when it reaches the
+
     limit or when there are no more files left.
 
     Parameters
@@ -181,35 +170,34 @@ def copy_limited_images(source_folder, destination_folder, max_images):
     # --------------------------------------------------------------
     # STEP 1 – initialise a counter
     # --------------------------------------------------------------
-    # count = 0
 
     # --------------------------------------------------------------
     # STEP 2 – iterate over the entries in the source folder
     # --------------------------------------------------------------
-    # for filename in os.listdir(source_folder):
-    #     if count >= max_images:
-    #         break
-
-    #     source_path = os.path.join(source_folder, filename)
 
     #     # ----------------------------------------------------------
     #     # STEP 2a – only copy regular files (skip sub‑folders, hidden files)
     #     # ----------------------------------------------------------
-    #     if not os.path.isfile(source_path):
-    #         continue
 
     #     # ----------------------------------------------------------
     #     # STEP 2b – construct the destination path and copy the file
     #     # ----------------------------------------------------------
-    #     dest_path = os.path.join(destination_folder, filename)
-    #     shutil.copyfile(source_path, dest_path)
 
     #     # ----------------------------------------------------------
     #     # STEP 2c – increment the counter
     #     # ----------------------------------------------------------
-    #     count += 1
 
-    pass
+    count = 0
+    for file_name in os.listdir(source_folder):
+        if count >= max_images:
+            break
+        source_path = os.path.join(source_folder, file_name)
+        if os.path.isfile(source_path):
+            destination_path = os.path.join(destination_folder, file_name)
+            shutil.copyfile(source_path, destination_path)
+            count += 1
+
+    return
 
 
 # ------------------------------------------------------------------
