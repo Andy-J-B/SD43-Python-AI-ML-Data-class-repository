@@ -69,7 +69,27 @@ def load_images(image_size: int):
     # END OF FUNCTION – the above lines are all comments.
     # Replace them with the real code and *remove* the "pass".
     # --------------------------------------------------------------
-    pass
+    x, y = [], []
+    for filename in os.listdir("cats"):
+        f = os.path.join("cats", filename)
+        img = Image.open(f).convert("RGB")
+        img = img.resize((image_size, image_size))
+        arr = np.array(img, dtype=np.float32) / 255.0
+        x.append(arr.flatten())
+        y.append(0)
+    for filename in os.listdir("dogs"):
+        f = os.path.join("dogs", filename)
+        img = Image.open(f).convert("RGB")
+        img = img.resize((image_size, image_size))
+        arr = np.array(img, dtype=np.float32) / 255.0
+        x.append(arr.flatten())
+        y.append(1)
+    x = np.array(x)
+    y = np.array(y)
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=0.2, randoms_state=42, stratify=y
+    )
+    return x_train, x_test, y_train, y_test
 
 
 # ------------------------------------------------------------------
@@ -202,13 +222,19 @@ def compute_loss(y_true, y_pred):
     # STEP 3 – return the scalar loss
     # --------------------------------------------------------------
 
-    pass
+    m = y_true.shape[0]
+    y_true = y_true.reshape(-1, 1)
+    epsilon = 1e-9
+    loss = -np.mean(
+        y_true * np.log(y_pred + epsilon) + (1 - y_true) * np.log(1 - y_pred + epsilon)
+    )
+    return loss
 
 
 # ------------------------------------------------------------------
 # 6️⃣  BACKWARD PROPAGATION
 # ------------------------------------------------------------------
-def backward_propagation(X, y_true, parameters, cache):
+def backward_propagation(x, y_true, parameters, cache):
     """
     Compute gradients of the loss w.r.t. every parameter.
 
@@ -244,8 +270,19 @@ def backward_propagation(X, y_true, parameters, cache):
     # --------------------------------------------------------------
     # grads = {"dW1": dW1, "db1": db1, "dW2": dW2, "db2": db2}
     # return grads
-
-    pass
+    m = x.shape[0]
+    w2 = parameters["W2"]
+    a1 = cache["A1"]
+    a2 = cache["A2"]
+    y_true = y_true.reshape(-1, 1)
+    dZ2 = a2 - y_true
+    dW2 = (a1.T @ dZ2) / m
+    db2 = np.sum(dZ2, axis=0, keepdims=True) / m
+    dA1 = dZ2 @ w2.T
+    dZ1 = dA1 * (cache["Z1"] > 0)
+    dW1 = (x.T @ dZ1) / m
+    db1 = np.sum(dZ1, axis=0, keepdims=True) / m
+    return {"dW1": dW1, "db1": db1, "dW2": dW2, "db2": db2}
 
 
 # ------------------------------------------------------------------
@@ -259,13 +296,12 @@ def update_parameters(parameters, grads, learning_rate):
     # --------------------------------------------------------------
     # TODO: update each of W1, b1, W2, b2 using the corresponding gradient
     # --------------------------------------------------------------
-    # parameters["W1"] -= learning_rate * grads["dW1"]
-    # parameters["b1"] -= learning_rate * grads["db1"]
-    # parameters["W2"] -= learning_rate * grads["dW2"]
-    # parameters["b2"] -= learning_rate * grads["dbb2"]
-    # return parameters
 
-    pass
+    parameters["W1"] -= learning_rate * grads["dW1"]
+    parameters["b1"] -= learning_rate * grads["db1"]
+    parameters["W2"] -= learning_rate * grads["dW2"]
+    parameters["b2"] -= learning_rate * grads["db2"]
+    return parameters
 
 
 # ------------------------------------------------------------------
@@ -333,7 +369,9 @@ def predict(X, parameters, threshold=0.5):
     # STEP 3 – return the prediction vector
     # --------------------------------------------------------------
 
-    pass
+    probs, _ = forward_propagation(X, parameters)
+    predictions = (probs >= threshold).astype(int).flatten()
+    return predictions
 
 
 # ------------------------------------------------------------------

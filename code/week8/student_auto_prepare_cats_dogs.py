@@ -36,22 +36,8 @@ def download_dataset():
 
     Returns nothing – just creates ZIP_NAME on disk.
     """
-    # --------------------------------------------------------------
-    # STEP 1 – build the command string.
-    # Example:  kaggle datasets download -d marquis03/cats-and-dogs
-    # --------------------------------------------------------------
 
-    # --------------------------------------------------------------
-    # STEP 2 – execute the command.  You may use os.system() or
-    # subprocess.run() (the latter gives you more control).
-    # --------------------------------------------------------------
-
-    # --------------------------------------------------------------
-    # OPTIONAL: rename the downloaded zip to the constant ZIP_NAME
-    # (the Kaggle CLI may use a different file name).
-    # --------------------------------------------------------------
-
-    pass
+    os.system("kaggle datasets download -d " + DATASET_NAME)
 
 
 # ------------------------------------------------------------------
@@ -61,23 +47,11 @@ def unzip_dataset():
     """
     Extract the contents of ZIP_NAME into EXTRACT_FOLDER.
     """
-    # --------------------------------------------------------------
-    # STEP 1 – inform the user something is happening
-    # --------------------------------------------------------------
 
-    # --------------------------------------------------------------
-    # STEP 2 – make sure the destination folder exists
-    # --------------------------------------------------------------
-
-    # --------------------------------------------------------------
-    # STEP 3 – open the zip file and extract all members
-    # --------------------------------------------------------------
-
-    # --------------------------------------------------------------
-    # STEP 4 – let the user know we are done
-    # --------------------------------------------------------------
-
-    pass
+    if not os.path.exists(EXTRACT_FOLDER):
+        os.makedirs(EXTRACT_FOLDER)
+    with zipfile.ZipFile(ZIP_NAME, "r") as zip_ref:
+        zip_ref.extractall(EXTRACT_FOLDER)
 
 
 # ------------------------------------------------------------------
@@ -88,15 +62,10 @@ def create_clean_folders():
     Create the final folders that will hold the limited cat / dog images.
     If a folder already exists we keep it (it may already contain files).
     """
-    # --------------------------------------------------------------
-    # STEP 1 – create CATS_FOLDER if it does not exist
-    # --------------------------------------------------------------
-
-    # --------------------------------------------------------------
-    # STEP 2 – create DOGS_FOLDER if it does not exist
-    # --------------------------------------------------------------
-
-    pass
+    if not os.path.exists(CATS_FOLDER):
+        os.makedirs(CATS_FOLDER)
+    if not os.path.exists(DOGS_FOLDER):
+        os.makedirs(CATS_FOLDER)
 
 
 # ------------------------------------------------------------------
@@ -150,25 +119,6 @@ def copy_limited_images(source_folder, destination_folder, max_images):
     destination_folder : str – folder we created in step 3
     max_images : int   – maximum number of pictures to copy per class
     """
-    # --------------------------------------------------------------
-    # STEP 1 – initialise a counter
-    # --------------------------------------------------------------
-
-    # --------------------------------------------------------------
-    # STEP 2 – iterate over the entries in the source folder
-    # --------------------------------------------------------------
-
-    #     # ----------------------------------------------------------
-    #     # STEP 2a – only copy regular files (skip sub‑folders, hidden files)
-    #     # ----------------------------------------------------------
-
-    #     # ----------------------------------------------------------
-    #     # STEP 2b – construct the destination path and copy the file
-    #     # ----------------------------------------------------------
-
-    #     # ----------------------------------------------------------
-    #     # STEP 2c – increment the counter
-    #     # ----------------------------------------------------------
 
     count = 0
     for file_name in os.listdir(source_folder):
