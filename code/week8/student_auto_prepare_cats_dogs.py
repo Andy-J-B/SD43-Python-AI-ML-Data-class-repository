@@ -65,7 +65,7 @@ def create_clean_folders():
     if not os.path.exists(CATS_FOLDER):
         os.makedirs(CATS_FOLDER)
     if not os.path.exists(DOGS_FOLDER):
-        os.makedirs(CATS_FOLDER)
+        os.makedirs(DOGS_FOLDER)
 
 
 # ------------------------------------------------------------------
@@ -148,14 +148,18 @@ def cleanup():
     # --------------------------------------------------------------
     # STEP 2 – remove the zip archive if it exists
     # --------------------------------------------------------------
+    if os.path.exists(ZIP_NAME):
+        os.remove(ZIP_NAME)
 
     # --------------------------------------------------------------
     # STEP 3 – delete the extraction folder (and everything inside)
     # --------------------------------------------------------------
-
+    if os.path.exists(EXTRACT_FOLDER):
+        os.remove(EXTRACT_FOLDER)
     # --------------------------------------------------------------
     # STEP 4 – final message
     # --------------------------------------------------------------
+    print("shrek back in theatres next month :)) 25th year anniversary")
 
     pass
 
@@ -167,32 +171,32 @@ if __name__ == "__main__":
     # --------------------------------------------------------------
     # STEP 1 – download the zip from Kaggle
     # --------------------------------------------------------------
-
+    download_dataset()
     # --------------------------------------------------------------
     # STEP 2 – unzip the archive into EXTRACT_FOLDER
     # --------------------------------------------------------------
-
+    unzip_dataset()
     # --------------------------------------------------------------
     # STEP 3 – make sure the destination folders exist
     # --------------------------------------------------------------
-
+    create_clean_folders()
     # --------------------------------------------------------------
     # STEP 4 – locate the original cat and dog image folders
     # --------------------------------------------------------------
-
+    catSource, dogSource = find_image_folders()
     # --------------------------------------------------------------
     # STEP 5 – copy up to MAX_IMAGES_PER_CLASS pictures for each class
     # --------------------------------------------------------------
-
+    copy_limited_images(catSource, CATS_FOLDER, MAX_IMAGES_PER_CLASS)
     # --------------------------------------------------------------
     # STEP 6 – delete the zip file and the raw extraction folder
     # --------------------------------------------------------------
-
+    copy_limited_images(dogSource, DOGS_FOLDER, MAX_IMAGES_PER_CLASS)
     # --------------------------------------------------------------
     # STEP 7 – let the user know everything succeeded and show
     #          how many files we ended up with.
     # --------------------------------------------------------------
-
+    # cleanup()
     # --------------------------------------------------------------
     # END OF SCRIPT – replace all the ``pass`` statements (and delete
     # the comment blocks) with the real code shown above.

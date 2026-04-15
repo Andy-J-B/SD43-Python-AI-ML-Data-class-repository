@@ -193,7 +193,17 @@ def forward_propagation(X, parameters):
     # STEP 6 – store intermediate values in cache and return them
     # --------------------------------------------------------------
 
-    pass
+    w1, b1, w2, b2 = (
+        parameters["W1"],
+        parameters["B1"],
+        parameters["W2"],
+        parameters["B2"],
+    )
+    z1 = X @ w1 + b1
+    a1 = relu(z1)
+    z2 = a1 @ w2 + b2
+    a2 = sigmoid(z2)
+    return a2, {"Z1": z1, "A1": a1, "Z2": z2, "A2": a2}
 
 
 # ------------------------------------------------------------------
@@ -343,7 +353,15 @@ def train_model(
     # STEP 3 – after the loop, return the learned parameters
     # --------------------------------------------------------------
 
-    pass
+    parameters = initialize_parameters(input_size, hidden_size)
+    for epoch in range(epochs):
+        y_prediction, cache = forward_propagation(X_train, parameters)
+        loss = compute_loss(y_train, y_prediction)
+        grads = backward_propagation(X_train, y_train, parameters, cache)
+        parameters = update_parameters(parameters, grads, learning_rate)
+        if verbose and (epoch % 10 == 0 or epoch == epochs - 1):
+            print(f"Epoch {epoch:3d} / {epochs-1:3d}  -  loss: {loss:.5f}")
+    return parameters
 
 
 # ------------------------------------------------------------------
