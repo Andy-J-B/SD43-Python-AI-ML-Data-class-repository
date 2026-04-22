@@ -28,22 +28,28 @@ def load_model():
     # --------------------------------------------------------------
     # STEP 1 – load the .npz file (named exactly "model.npz")
     # --------------------------------------------------------------
-
+    data = np.load("model.npz")
     # --------------------------------------------------------------
     # STEP 2 – create a dict called ``parameters`` and copy the four
     #         arrays from the NPZ into it
     #         (W1, b1, W2, b2)
     # --------------------------------------------------------------
+    parameters = {}
 
     # --------------------------------------------------------------
     # STEP 3 – read the stored hyper‑parameters and cast to int
     # --------------------------------------------------------------
+    parameters["W1"] = data["W1"]
+    parameters["b1"] = data["b1"]
+    parameters["W2"] = data["W2"]
+    parameters["b2"] = data["b2"]
+    image_size = int(data["image_size"])
+    hidden_size = int(data["hidden_size"])
+    return parameters, image_size, hidden_size
 
     # --------------------------------------------------------------
     # STEP 4 – return the dict and the two ints
     # --------------------------------------------------------------
-
-    pass
 
 
 # ------------------------------------------------------------------
@@ -55,7 +61,7 @@ def relu(Z):
     Return max(0, Z) element‑wise.
     """
     # TODO: implement ``np.maximum(0, Z)`` and return the result
-    pass
+    return np.maximum(0, 2)
 
 
 # ------------------------------------------------------------------
@@ -68,7 +74,7 @@ def sigmoid(Z):
     coming from the network are already safe.
     """
     # TODO: compute the sigmoid and return it
-    pass
+    return 1 / (1 + np.exp(-Z))
 
 
 # ------------------------------------------------------------------
@@ -89,91 +95,57 @@ def forward_propagation(X, parameters):
     # --------------------------------------------------------------
     # STEP 1 – unpack the weight matrices and bias vectors
     # --------------------------------------------------------------
-
+    W1 = parameters["W1"]
+    b1 = parameters["b1"]
+    W2 = parameters["W2"]
+    b2 = parameters["b2"]
     # --------------------------------------------------------------
     # STEP 2 – compute the hidden layer (Z1 then ReLU)
     # --------------------------------------------------------------
-
+    Z1 = np.dot(X, W1) + b1
     # --------------------------------------------------------------
     # STEP 3 – compute the output layer (Z2 then sigmoid)
     # --------------------------------------------------------------
-
+    a1 = relu(Z1)
+    Z2 = np.dot(a1, W2) + b2
+    a2 = sigmoid(Z2)
     # --------------------------------------------------------------
     # STEP 4 – return A2 (the probability that the image is a dog)
     # --------------------------------------------------------------
+    return a2
 
-    pass
 
-
-# ------------------------------------------------------------------
-# 5️⃣  PRE‑PROCESS ONE IMAGE (must match the preprocessing used in training)
-# ------------------------------------------------------------------
 def preprocess_image(image_path, image_size):
-    """
-    Load an image from disk, resize it, normalise pixel values,
-    flatten it, and reshape to a (1, n_features) row vector.
 
-    Args
-    ----
-    image_path : str
-        Path to the JPEG/PNG file supplied on the command line.
-    image_size : int
-        The size the model expects (e.g. 32 → resize to 32×32).
+    image = Image.open(image_path)
+    image = image.resize((image_size, image_size))
 
-    Returns
-    -------
-    X : np.ndarray, shape (1, n_features)
-        Ready to be fed into ``forward_propagation``.
-    """
-    # --------------------------------------------------------------
-    # STEP 1 – open the image with Pillow and resize to (image_size, image_size)
-    # --------------------------------------------------------------
+    image_array = np.array(image)
+    image_array = image_array / 255.0
 
-    # --------------------------------------------------------------
-    # STEP 2 – turn the image into a NumPy array of floats and normalise
-    # --------------------------------------------------------------
+    image_flat = image_array.flatten()
+    image_flat = image_flat.reshape(1, -1)
 
-    # --------------------------------------------------------------
-    # STEP 3 – flatten the 3‑D (h, w, 3) array into a 1‑D vector
-    # --------------------------------------------------------------
-
-    # --------------------------------------------------------------
-    # STEP 4 – reshape into a row vector so its shape is (1, n_features)
-    # --------------------------------------------------------------
-
-    # --------------------------------------------------------------
-    # STEP 5 – return X
-    # --------------------------------------------------------------
-
-    pass
+    return image_flat
 
 
-# ------------------------------------------------------------------
-# 🏁  MAIN – command‑line interface
-# ------------------------------------------------------------------
 if __name__ == "__main__":
-    # --------------------------------------------------------------
-    # STEP 1 – make sure the user supplied exactly one argument
-    # --------------------------------------------------------------
 
-    # --------------------------------------------------------------
-    # STEP 2 – grab the path to the image file from the command line
-    # --------------------------------------------------------------
+    if len(sys.argv) != 2:
+        print("Usage: python binary_nn_predict.py image.jpg")
+        sys.exit()
 
-    # --------------------------------------------------------------
-    # STEP 3 – load the saved model (weights + hyper‑params)
-    # --------------------------------------------------------------
+    image_path = sys.argv[1]
 
-    # --------------------------------------------------------------
-    # STEP 4 – preprocess the supplied image so it matches the training data
-    # --------------------------------------------------------------
+    parameters, image_size, hidden_size = load_model()
 
-    # --------------------------------------------------------------
-    # STEP 5 – run a forward pass to obtain the probability of “dog”
-    # --------------------------------------------------------------
+    X = preprocess_image(image_path, image_size)
 
-    # --------------------------------------------------------------
-    # STEP 6 – turn the probability into a class label and print it
-    # --------------------------------------------------------------
+    probability = forward_propagation(X, parameters)
 
-    pass
+    if probability[0][0] >= 0.5:
+        print("Prediction: DOG")
+        print("Confidence:", probability[0][0])
+    else:
+        print("Prediction: CAT")
+        print("Confidence:", 1 - probability[0][0])
