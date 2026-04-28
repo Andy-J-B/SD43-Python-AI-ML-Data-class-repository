@@ -45,6 +45,8 @@ def main():
         if episode % 100 == 0:
             print(f"Ep {episode} | Best Streak: {best_streak} | Memory: {len(agent.q_table)}")
 
+    agent.save_model("pong_ai.pkl")
+
     # --- SHOWCASE PHASE ---
     print("Training complete! Watch the AI play perfectly.")
     while True:

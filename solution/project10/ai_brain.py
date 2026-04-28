@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import pickle 
 
 class QLearningAgent:
     def __init__(self):
@@ -25,3 +26,16 @@ class QLearningAgent:
         
         best_future_q = max(next_q_values)
         q_values[action] += alpha * (reward + gamma * best_future_q - q_values[action])
+    
+    def save_model(self, filename="pong_ai.pkl"):
+        with open(filename, "wb") as f:
+            pickle.dump(self.q_table, f)
+        print(f"Model saved to {filename}")
+
+    def load_model(self, filename="pong_ai.pkl"):
+        try:
+            with open(filename, "rb") as f:
+                self.q_table = pickle.load(f)
+            print(f"Model loaded from {filename}")
+        except FileNotFoundError:
+            print("No saved model found. Starting with a fresh brain.")
