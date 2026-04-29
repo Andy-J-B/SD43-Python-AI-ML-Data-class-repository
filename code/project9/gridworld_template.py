@@ -47,7 +47,9 @@ class GridWorld:
         Place the agent back at START and return the current state.
         """
         # TODO: set the internal position to START and return it
-        pass
+        self.pos = START
+        return self.pos
+    
 
     # ------------------------------------------------------------------
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool]:
@@ -64,7 +66,19 @@ class GridWorld:
         #        * GOAL  → reward  1.0, done True
         #        * HOLE  → reward -1.0, done True
         #        * otherwise → reward -0.01, done False
-        pass
+        dr,dc = ACTIONS[action]
+        r,c = self.pos
+        nr,nc = r + dr, c + dc
+        if nr < 0 or nr >= ROWS or nc < 0 or nc >= COLS:
+            nr, nc = r, c
+        self.pos = tuple(nr,nc)
+        if self.pos == GOAL:
+            return self.pos, 1.0, True
+        elif self.pos in HOLES:
+            return self.pos, -1.0, True
+        return self.pos, -0.01, False
+                
+
 
     # ------------------------------------------------------------------
     def get_valid_actions(self) -> List[int]:
