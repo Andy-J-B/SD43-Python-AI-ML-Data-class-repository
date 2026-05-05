@@ -116,14 +116,18 @@ class QLearningAgent:
         and a zero‑filled Q‑table of shape (ROWS*COLS, N_ACTIONS).
         """
         # TODO: store lr, gamma, eps and allocate the Q‑table
-        pass
+        self.lr = lr
+        self.gamma = gamma
+        self.eps = eps
+        self.Q = np.zeros((ROWS * COLS, N_ACTIONS))
 
     # ------------------------------------------------------------------
     # Helper: convert a (row, col) state into a flat index 0 … ROWS*COLS‑1
     # ------------------------------------------------------------------
     def _state_to_index(self, state: Tuple[int, int]) -> int:
         # TODO: return row * COLS + col
-        pass
+        r, c = state
+        return r * COLS + c
 
     # ------------------------------------------------------------------
     # ε‑greedy action selection
@@ -139,7 +143,13 @@ class QLearningAgent:
         #   * if < eps → return np.random.choice(N_ACTIONS)
         #   * otherwise look up the row in Q, find max value, get all actions
         #     that achieve this max, and randomly pick one of them.
-        pass
+        if np.random.rand() < self.eps:
+            return np.random.choice(N_ACTIONS)
+        idx = self._state_to_index(state)
+        best_Q = np.max(self.Q[idx])
+        candidates = np.where(self.Q[idx]==best_Q)[0]
+        return np.random.choice(candidates)
+    
 
     # ------------------------------------------------------------------
     # Standard Q‑learning update
@@ -162,7 +172,13 @@ class QLearningAgent:
         #   * translate state and next_state to flat indices
         #   * compute the target (add discounted max‑Q if not done)
         #   * perform the incremental update on Q[s_idx, action]
-        pass
+        s_idx = self._state_to_index(state)
+        ns_idx = self._state_to_index(next_state)
+        target = reward
+        if not done:
+            target += self.gamma * np.max(self.Q[ns_idx])
+        self.Q[s_idx, action] += self.lr * (target - self.Q[s_idx, action])
+
 
 
 # ==================================================================
@@ -190,7 +206,29 @@ def train_agent(
     #       c. (optional) every `render_every` episodes call env.render()
     #          and plot_value_function() to visualise progress.
     #   4. Return the trained agent.
-    pass
+    env = GridWorld()
+    agent = QLearningAgent(lr = 0.1, gamma = 0.99, eps = 0.2)
+    for ep in range(1, num_episodes + 1):
+        state = env.reset()
+        done = False
+        steps = 0
+        while not done and steps < max_steps:
+            action = agent.select_action(state)
+            next_state, reward, done = env.step(action)
+            agent.update(state, action, reward, next_state, done)
+            state = next_state
+            steps = steps + 1
+            
+            if render_every and ep % render_every == 0:
+                print(f"\nEpisode {ep}")
+                env.render()
+                plot_value_function(agent, title=f"Episode {ep}")
+        
+    return agent
+
+
+            
+
 
 
 # ==================================================================
@@ -294,18 +332,44 @@ def play_greedy(
     delay: float = 0.5,
 ) -> None:
     """
-    Run ONE episode after training, always picking the greedy action,
+    Run ONE episode after training using the greedy policy (no ε‑exploration)
     and print the board after each move.
+
+    Parameters
+    ----------
+    agent : QLearningAgent
+        The trained Q‑learning agent.
+    env : GridWorld
+        Fresh environment (reset will be called inside).
+    max_steps : int
+        Upper bound on steps – avoids infinite loops if something went wrong.
+    delay : float
+        Seconds to wait between frames (set to 0 for instant printing).
     """
-    # TODO:
-    #   * reset the environment, render the initial board.
-    #   * loop until done or max_steps:
-    #         – find the best action for the current state (break ties randomly)
-    #         – step the environment
-    #         – render the board, sleep for `delay` seconds
-    #   * after the loop print SUCCESS if the final position is GOAL,
-    #     otherwise print FAILURE and how many steps were taken.
-    pass
+    state = env.reset()
+    env.render()
+    time.sleep(delay)
+
+    done = False
+    steps = 0
+    while not done and steps < max_steps:
+        # choose best action (break ties randomly)
+        s_idx = agent._state_to_index(state)
+        best_q = np.max(agent.Q[s_idx])
+        candidates = np.where(agent.Q[s_idx] == best_q)[0]
+        action = np.random.choice(candidates)
+
+        next_state, reward, done = env.step(action)
+
+        env.render()
+        time.sleep(delay)
+
+        state = next_state
+        steps += 1
+
+    result = "SUCCESS!" if env.pos == GOAL else "FAILURE."
+    print(f"Episode finished after {steps} steps – {result}")
+
 
 
 # ==================================================================
@@ -332,7 +396,18 @@ def animate_greedy(
     #         – otherwise look up the greedy action for the current state,
     #           step the environment, move the marker, update counters
     #   * build and return the FuncAnimation object.
-    pass
+    greedy_action = np.argmax(agent.Q, axis=1)
+    v = np.max(agent.Q, axis=1).reshape((ROWS,COLS))
+    fig, ax = plt.subplots(figsize=(5, 5))
+    im = ax.imshow(v, cmap="viridis", origin="upper")
+    fig.colorbar(im, ax=ax, label="max Q")
+    ax.set_xticks(np.arange(COLS))
+    ax.set_yticks(np.arange(ROWS))
+    ax.set_title("Greedy episode (animation)")
+    for hr, hc in HOLES:
+        ax.add_patch(Rectangle((hc-0.5, hr - 0.5), 1, 1, facecolour="black",edgecolour="white"))
+
+
 
 
 # ==================================================================
