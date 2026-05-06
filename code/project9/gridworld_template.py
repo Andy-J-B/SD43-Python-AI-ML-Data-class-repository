@@ -415,39 +415,10 @@ def animate_greedy(
 # ==================================================================
 if __name__ == "__main__":
 
-    # --------------------------------------------------------------
-    # 1️⃣  Train the agent
-    # --------------------------------------------------------------
-    # TODO: call train_agent() with the desired number of episodes etc.
-    # Example (feel free to change the numbers):
-    # trained = train_agent(num_episodes=500, max_steps=50, render_every=0)
-    pass
-
-    # --------------------------------------------------------------
-    # 2️⃣  Show the final value‑function heat‑map
-    # --------------------------------------------------------------
-    # TODO: uncomment after you have a trained agent
-    # plot_value_function(trained, title="Final learned value function")
-
-    # --------------------------------------------------------------
-    # 3️⃣  (Optional) draw the greedy policy arrows
-    # --------------------------------------------------------------
-    # plot_policy(trained, title="Greedy policy (arrows)")
-
-    # --------------------------------------------------------------
-    # 4️⃣  Console play‑through – watch the robot after training
-    # --------------------------------------------------------------
-    # env = GridWorld()
-    # print("\n=== Console play‑through (greedy) ===\n")
-    # play_greedy(trained, env, max_steps=30, delay=0.4)
-
-    # --------------------------------------------------------------
-    # 5️⃣  (Optional) Matplotlib animation
-    # --------------------------------------------------------------
-    # env_anim = GridWorld()
-    # anim = animate_greedy(trained, env_anim, max_steps=30, interval=500)
-    # plt.show()   # blocks until you close the window
-
-    # --------------------------------------------------------------
-    # End of script
-    # --------------------------------------------------------------
+    train = train_agent(num_episodes = 500, max_steps = 50, render_every = 0)
+    plot_value_function(train, title = "Final value learning function")
+    env = GridWorld()
+    print("\n=== Console play‑through (greedy) ===\n")
+    play_greedy(train, env, max_steps = 30, delay = 0.1)
+    
+    
