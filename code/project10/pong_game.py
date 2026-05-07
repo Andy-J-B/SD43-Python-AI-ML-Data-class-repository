@@ -8,7 +8,14 @@ class PongGame:
         # If visual is enabled, initialize pygame and create the window
         # Set the window title and prepare a font for the UI
         # Call the reset function to set up the first game
-        pass
+        self.width, self.height = 400, 300
+        self.visual = visual
+        if self.visual == True:
+            pygame.init()
+            self.screen = pygame.display.set_mode((self.width, self.height))
+            pygame.display.set_caption("AI Pong Training")
+            self.font = pygame.font.SysFont("Arial", 18)
+        self.reset()
 
     def reset(self):
         # Place the paddle in the vertical center of the screen
@@ -38,13 +45,36 @@ class PongGame:
         # If the ball hit the left wall, just bounce it back
             
         # Return the new state, the reward earned, and whether the game is over
-        pass
+        if action == 0 and self.paddle_y > 0:
+            self.paddle_y -= 10
+        elif action == 1 and self.paddle_y < self.height - 60:
+            self.paddle_y += 10
+        self.ball_x += self.ball_dx
+        self.ball_y += self.ball_dy
+        reward = 0
+        done = False
+
+        if self.ball_y <= 0 or self.ball_y >= self.height:
+            self.ball_dy *= -1
+        if self.ball_x >= self.width:
+            if self.paddle_y< self.ball_y < self.paddle_y+60:
+                self.ball_x *= -1.05
+                reward = 10
+            else:
+                reward = -10
+                done = True
+        elif self.ball_x <= 0:
+            self.ball_dx *= -1
+        return self.get_state(), reward, done
+
+        
 
     def get_state(self):
         # Convert the continuous ball and paddle positions into a simplified grid
         # Divide the X and Y coordinates by a factor (like 40) to make the "map" smaller
         # Return these simplified coordinates as a tuple for the AI's memory keys
-        pass
+        return (int(self.ball_x // 40), int(self.ball_y // 40), int(self.paddle_y // 40))
+
 
     def render(self, stats=None):
         # If visual mode is off, exit the function

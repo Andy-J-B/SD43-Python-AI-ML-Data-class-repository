@@ -29,7 +29,13 @@ class QLearningAgent:
         # Find the best possible value we could get in the next state
         # Use the Q-Learning formula to update the value of the action we just took
         # This formula balances what we knew before with the new reward we just received
-        pass
+        Q_Values = self.get_q_values(state)
+        next_Q_Values = self.get_q_values(next_state)
+        alpha = 0.2
+        gamma = 0.9
+        best_future_Q = max(next_Q_Values)
+        Q_Values[action]+=alpha*(reward+gamma*best_future_Q-Q_Values[action])
+        
     
     def save_model(self, filename="pong_ai.pkl"):
         # Open a file in write-binary mode
