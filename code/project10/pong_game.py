@@ -84,4 +84,17 @@ class PongGame:
         # Draw the ball as a bright green circle
         # If stats are provided, loop through them and draw the text on the screen
         # Refresh the display to show the new frame
-        pass
+        if not self.visual: return
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: pygame.quit(); exit()
+        self.screen.fill((20, 20, 30))
+        pygame.draw.rect(self.screen,(255,255,255),(380,self.paddle_y,10,60))
+        pygame.draw.circle(self.screen,(0,255,127),(int(self.ball_x),int(self.ball_y)),6)
+        if stats:
+            y_offset = 10
+            for key,value in stats.items():
+                text = self.font.render(f"{key}: {value}", True, (255, 255, 255))
+                self.screen.blit(text, (10, y_offset))
+                y_offset += 20
+        pygame.display.flip()
+

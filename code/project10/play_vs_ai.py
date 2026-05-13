@@ -7,7 +7,11 @@ class VersusGame(PongGame):
         # Initialize the parent PongGame with visuals enabled
         # Create a new variable for the human paddle position
         # Create variables to track the human's score and the AI's score
-        pass
+        super().__init__(visual = True)
+        self.human_y = self.height//2
+        self.human_score = 0
+        self.ai_score = 0
+
 
     def play_step(self, ai_action, human_action):
         # Move the AI paddle based on the action chosen by the brain
@@ -34,7 +38,10 @@ class VersusGame(PongGame):
         # Draw the ball
         # Create a font and render the score text (YOU vs AI)
         # Blit the score text onto the screen and flip the display
-        pass
+        self.screen.fill((30,30,30))
+        pygame.draw.rect(self.screen, (0, 150, 255), (10, self.human_y, 10, 60))
+        pygame.draw.rect(self.screen, (255, 50, 50), (380, self.paddle_y, 10, 60))
+        pygame.draw.circle(self.screen, (255, 255, 255), (int(self.ball_x), int(self.ball_y)), 6)
 
 def main():
     # Create the AI agent and load the 'pong_ai.pkl' brain file

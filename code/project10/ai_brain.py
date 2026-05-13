@@ -5,19 +5,26 @@ import pickle
 class QLearningAgent:
     def __init__(self):
         # Initialize an empty dictionary to act as the AI's memory (Q-Table)
-        pass
+        self.Q_Table = {}
+        
 
     def get_q_values(self, state):
         # Check if the current state is already in our memory
         # If the state is new, create a list of three zeros for our possible moves: Up, Down, Stay
         # Return the memory values for this state
-        pass
+        if state not in self.Q_Table:
+            self.Q_Table[state] = [0.0,0.0,0.0]
+        return self.Q_Table[state]
 
     def choose_action(self, state, epsilon):
         # Generate a random number to decide between exploring and exploiting
         # If the random number is less than epsilon, pick a random move (0, 1, or 2)
         # Otherwise, look at the memory and pick the move with the highest value using argmax
-        pass
+        if random.random()<epsilon:
+            return random.randint(0,2)
+        else:
+            return np.argmax(self.get_q_values(state))
+        
 
     def learn(self, state, action, reward, next_state):
         # Look up the current knowledge (Q-values) for the current state
@@ -29,12 +36,11 @@ class QLearningAgent:
         # Find the best possible value we could get in the next state
         # Use the Q-Learning formula to update the value of the action we just took
         # This formula balances what we knew before with the new reward we just received
-        Q_Values = self.get_q_values(state)
-        next_Q_Values = self.get_q_values(next_state)
-        alpha = 0.2
-        gamma = 0.9
-        best_future_Q = max(next_Q_Values)
-        Q_Values[action]+=alpha*(reward+gamma*best_future_Q-Q_Values[action])
+        q_values = self.get_q_values(state)
+        next_q_values = self.get_q_values(next_state)
+        alpha, gamma = 0.2, 0.9
+        best_future_q = max(next_q_values)
+        q_values[action]+=alpha*(reward+gamma*best_future_q-q_values[action])
         
     
     def save_model(self, filename="pong_ai.pkl"):
