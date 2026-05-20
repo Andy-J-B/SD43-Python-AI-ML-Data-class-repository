@@ -59,7 +59,27 @@ def main():
         # Run the physics step with both actions
         # Render the updated frame
         # Limit the frame rate to 60 FPS for smooth gameplay
-        pass
+    agent = QLearningAgent()
+    agent.load_model("pong_ai.pkl")
+    game = VersusGame()
+    clock = pygame.time.Clock()
+
+    while True:
+        human_action = None
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: return
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]: human_action = "UP"
+        if keys[pygame.K_s]: human_action = "DOWN"
+
+        state = game.get_state()
+        ai_action = agent.choose_action(state, epsilon=0)
+
+        game.play_step(ai_action, human_action)
+        game.render_versus()
+        clock.tick(60)
+
 
 if __name__ == "__main__":
     main()

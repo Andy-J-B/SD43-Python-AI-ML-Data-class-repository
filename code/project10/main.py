@@ -35,7 +35,23 @@ def main():
         # Reset the game
         # While the game isn't over, have the AI choose moves with zero randomness
         # Update the game and render the "Showcase" mode with a small delay
-        pass
+    agent.save_model("pong_ai.pkl")
+    while True:
+        state = game.reset()
+        done = False
+        score = 0
+        while not done:
+            action = agent.choose_action(state,epsilion = 0)
+            state, reward, done =  game.step(action) 
+            if reward == 10:
+                score += 1
+            args = {
+                "MODE": "Showcase",
+                "Score": score,
+                "Best" : best_streak
+            }
+            game.render(args)
+            pygame.time.wait(15)
 
 if __name__ == "__main__":
     main()

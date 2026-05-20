@@ -1,4 +1,6 @@
 # imports
+import pandas as pd
+from sklearn.metrics import accuracy_score
 
 # --- Setup Helper (Run this once to create our dataset) ---
 def create_mini_dataset():
@@ -24,7 +26,9 @@ def create_mini_dataset():
 # --- Step 1: Load the Data ---
     # TODO: Read the CSV file located at the filepath using pandas.
     # TODO: Return the loaded dataframe.
-    pass
+def load_data(file_path):
+    df = pd.read_csv(file_path)
+    return df
 
 # --- Step 2 & 3: Split and Vectorize (Bag of Words) ---
     # TODO: Extract the 'review' column to serve as our input features.
@@ -38,7 +42,14 @@ def create_mini_dataset():
     # TODO: Transform the testing features into numbers using the already-fitted vectorizer.
     
     # TODO: Return the vectorized training features, the vectorized testing features, the training labels, the testing labels, and the vectorizer object.
-    pass
+def split_and_vectorize(df):
+    x = df["review"]
+    y = df["sentiment"]
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 42)
+    vectorizer = CountVectorizer()
+    x_train_vec = vectorizer.fit_transform(x_train)
+    x_test_vec = vectorizer.transform(x_test)
+    return x_train_vec, x_test_vec, y_train, y_test, vectorizer
 
 # --- Step 4: Train the AI ---
     # TODO: Create a Multinomial Naive Bayes classifier object.
@@ -50,7 +61,12 @@ def create_mini_dataset():
     # TODO: Use the trained model to predict the sentiments of the vectorized testing features.
     # TODO: Calculate the accuracy score by comparing the predictions to the actual testing labels.
     # TODO: Return the accuracy score.
-    pass
+def calculate_accuracy(model,x_test_vectorized,y_test):
+    predictions = model.predict(x_test_vectorized)
+    accuracy = accuracy_score(y_test, predictions)
+    return accuracy
+
+
 
 # --- Step 6: Make a Prediction ---
     # TODO: Place the input text string into a list.
@@ -62,22 +78,30 @@ def create_mini_dataset():
 
 # --- Main Application Execution ---
 if __name__ == "__main__":
-    # Create the CSV file
     create_mini_dataset()
+
+    # Create the CSV file
+
     
     print("Loading data...")
     # TODO: Call the load_data function and store the result in a variable.
-    
+    df = load_data("movie_reviews.csv")
     print("Preparing and Vectorizing Data...")
     # TODO: Call the split_and_vectorize function and store the five returned values.
-    
+    x_train_vec, x_test_vec, y_train_vec, y_test_vec, vectroizer = split_and_vectorize(df)
     print("Training Model...")
     # TODO: Call the train_ai function using the training data and store the model.
-    
+    trained_model = train_ai(x_train_vec, y_train)
     print("Evaluating Model...")
     # TODO: Call the calculate_accuracy function using the testing data and print the result as a percentage.
-    
+    accuracy = calculate_accuracy(trained_model, x_text_vec, y_test)
     print("Setting up User Interface...")
     # TODO: Create a wrapper function that takes a single text input and returns the result of predict_review.
     # TODO: Create a Gradio Interface using the wrapper function, setting the input to a textbox and output to text.
     # TODO: Launch the Gradio Interface to open the web browser app.
+    def Gradio_predict(text):
+        return predict_review(text, trained_model, vectroizer)
+    interface = gr.Interface(fn=Gradio_predict, inputs= gr.textbox(lines = 3, placeholder="Type a movie review here..."))
+    outputs = gr.textbox(label = "ai_sentiment_prediction")
+    title = "Live Sentiment Meter"
+    interface.Launch()
