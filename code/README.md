@@ -9,3 +9,6 @@
 - **project8** — Binary image classifier (cats vs. dogs) built from scratch with NumPy, including student-facing data preparation, training, and prediction scripts.
 - **project9** — Q-learning implementation for a 5×5 Frozen-Lake-like gridworld; student template with step-by-step TODOs.
 - **project10** — Pong game with a Q-learning AI agent trained via reinforcement learning over multiple episodes, including training, gameplay, and a saved model.
+- **project11** — Movie review sentiment classifier using a Multinomial Naive Bayes model trained on a small CSV dataset with bag-of-words vectorization, served through a Gradio web interface.
+- **project12** — From-scratch ID3 decision tree classifier that fetches the UCI Zoo Dataset and classifies animals into biological categories based on physical traits using information gain.
+- **project13** — Stock AI Analyzer CLI tool featuring LSTM price prediction (PyTorch), VADER-based news sentiment analysis, technical indicators, fundamental scoring, Monte Carlo portfolio optimization, and correlation analysis with optional PDF report generation.
