@@ -39,7 +39,18 @@ def main():
     # Print a welcome banner and output the entire generated tree blueprint to the terminal.
     # Construct a custom mockup feature list representing a mystery test animal.
     # Run the test animal through the classification function and output the mapped result.
-    pass
+    print("Fetching live zoo data set from the web")
+    feature_header, training_data = dataset.load_online_data()
+    print("Growing the tree")
+    tree = decision_tree.build_tree(training_data)
+    print_tree(tree, feature_names=feature_header)
+    mystery_animal=["0", "1", "1", "0", "0", "1", "1", "0", "1", "1", "0", "0", "0", "1", "0", "0", "1"]
+    raw_prediction=classify(mystery_animal, tree)
+    prediction=[CLASS_MAPPING.get(key,key)for key in raw_prediction.keys()]
+    print(f"ai_classification: {raw_prediction}")
+
+    
+
 
 if __name__ == '__main__':
     main()
