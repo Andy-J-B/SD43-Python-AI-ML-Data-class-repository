@@ -2,6 +2,15 @@ import dataset
 import decision_tree
 
 # Define a dictionary mapping the dataset's class numerical IDs (1-7) to actual string labels.
+CLASS_MAPPING = {
+    "1":"mammal",
+    "2":"bird",
+    "3":"reptile",
+    "4":"fish",
+    "5":"amphibian",
+    "6":"bug",
+    "7":"invertebrate"
+}
 
 def print_tree(node, spacing="", feature_names=None):
     # Check if the current node is a leaf structure.
@@ -17,7 +26,12 @@ def classify(row, node):
     # Evaluate the current row against the decision node's question match logic.
     # If the feature matches, recursively slide down the true branch.
     # If it fails, recursively slide down the false branch.
-    pass
+    if isinstance(node, decision_tree.Leaf):
+        return node.predictions
+    if node.question.match(row):
+        return classify(row, node.true_branch)
+    else:
+        return classify(row, node.false_branch)
 
 def main():
     # Call the dataset module function to pull the fresh data and headers from the web.
