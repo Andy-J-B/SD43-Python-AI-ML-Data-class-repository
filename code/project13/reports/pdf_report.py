@@ -11,9 +11,11 @@ from typing import Optional
 
 try:
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     import matplotlib.ticker as mticker
+
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
@@ -23,6 +25,7 @@ REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 try:
     from fpdf import FPDF
+
     FPDF_AVAILABLE = True
 except ImportError:
     FPDF_AVAILABLE = False

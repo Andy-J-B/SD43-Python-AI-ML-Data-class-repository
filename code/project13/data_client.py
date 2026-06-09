@@ -72,7 +72,9 @@ def get_current_price(ticker: str) -> tuple[float, float]:
     pass
 
 
-async def get_current_prices_batch(tickers: list[str]) -> dict[str, tuple[float, float]]:
+async def get_current_prices_batch(
+    tickers: list[str],
+) -> dict[str, tuple[float, float]]:
     """
     Fetch prices for multiple tickers concurrently.
     Use asyncio.get_event_loop().run_in_executor to wrap the synchronous
