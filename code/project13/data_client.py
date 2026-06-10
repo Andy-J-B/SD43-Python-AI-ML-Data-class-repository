@@ -29,7 +29,9 @@ def _get_async_client():
     global _async_http
     # If there is no async client yet, or it has been closed,
     # create a new one and store it.  Then return it.
-    pass
+    if _async_http is None or _async_http.is_closed:
+        _async_http = httpx.AsyncClient(timeout=10)
+    return _async_http
 
 
 async def _close_async_client():
